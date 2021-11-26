@@ -37,6 +37,21 @@ func (c Color) Darken() Color {
 	return c.UpdateHsv()
 }
 
+func (c Color) DarkenPercentage(percent float64) Color {
+	if percent > 1 {
+		return c
+	}
+	newTotalVmod := (float64(c.V)*10 + float64(c.VMod)) * percent
+	c.V = uint8(newTotalVmod / 10)
+	c.VMod = int(newTotalVmod) % 10
+	return c.UpdateHsv()
+}
+
+func (c Color) InverseHue() Color {
+	c.H += math.MaxInt16 / 2
+	return c.UpdateHsv()
+}
+
 func (c Color) SetHue16(hue uint16) Color {
 	c.H = hue
 	return c.UpdateHsv()
@@ -209,4 +224,18 @@ func HsvToRgb(hue uint16, sat, value uint8) (uint8, uint8, uint8) {
 	}
 
 	return uint8((m + r) * 255), uint8((m + g) * 255), uint8((m + b) * 255)
+}
+
+func LinerGradient(startColor, endColor Color, numSteps int, reversed bool) []Color {
+	output := make([]Color, numSteps)
+	colorStep := float64(endColor.H-startColor.H) / float64(numSteps)
+	for i := range output {
+		if reversed {
+			output[numSteps-i-1] = FromHsv(startColor.H+uint16(colorStep*float64(i)), startColor.S, startColor.V)
+		} else {
+			output[i] = FromHsv(startColor.H+uint16(colorStep*float64(i)), startColor.S, startColor.V)
+		}
+
+	}
+	return output
 }

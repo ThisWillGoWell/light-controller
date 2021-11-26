@@ -3,25 +3,17 @@ package controller
 import (
 	"github.com/thiswillgowell/light-controller/color"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
+	"github.com/thiswillgowell/light-controller/src/display"
 )
 
 type Controller struct {
 	Daisy    daisy.Daisy
-	Displays map[string]Display
+	Displays map[string]display.Display
 }
 
-type Display interface {
-	Height() int
-	Width() int
-	Clear()
-	GetPixel(row, col int) color.Color
-	SetPixel(row, col int, c color.Color)
-	Send() error
-}
-
-func ForEach(d Display, each func(row, col int, c color.Color) color.Color) {
-	for r := 0; r < d.Height(); r++ {
-		for c := 0; c < d.Width(); c++ {
+func ForEach(d display.Display, each func(row, col int, c color.Color) color.Color) {
+	for r := 0; r < d.Rows(); r++ {
+		for c := 0; c < d.Cols(); c++ {
 			d.SetPixel(r, c, each(r, c, d.GetPixel(r, c)))
 		}
 	}

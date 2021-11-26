@@ -22,6 +22,8 @@ var (
 	Darkorchid    = fromGolangColor(colornames.Darkorchid)
 	Maroon        = fromGolangColor(colornames.Maroon)
 	Purple        = fromGolangColor(colornames.Purple)
+	Yellow        = fromGolangColor(colornames.Yellow)
+	ForestGreen   = fromGolangColor(colornames.Forestgreen)
 )
 
 func fromGolangColor(c color.Color) Color {

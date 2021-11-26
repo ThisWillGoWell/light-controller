@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/thiswillgowell/light-controller/src/controller/pattern"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
+	"github.com/thiswillgowell/light-controller/src/display"
 	"github.com/thiswillgowell/light-controller/src/piportal"
 )
 
@@ -12,10 +13,20 @@ func main() {
 		panic(err)
 	}
 
-	matrixDisplay, err := piportal.NewMatrix("192.168.1.63:8081")
+	matrixRightDisplay, err := piportal.NewMatrix("192.168.1.53:8080")
 	if err != nil {
 		panic(err)
 	}
 
-	pattern.CenterVUBar(daisyDevice, matrixDisplay)
+	matrixLeftDisplay, err := piportal.NewMatrix("192.168.1.63:8080")
+	if err != nil {
+		panic(err)
+	}
+
+	combindedDispaly := display.NewMultiDisplay(display.ArrangementHorizontal,
+		display.NewRotation(matrixLeftDisplay, display.OneEighty),
+		matrixRightDisplay,
+	)
+
+	pattern.CenterHollowVUBarDouble(daisyDevice, combindedDispaly, 1)
 }

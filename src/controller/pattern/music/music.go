@@ -4,96 +4,191 @@ import (
 	"math"
 )
 
-
-type MappingInput struct{
-	InputSize int
-	OutputSize int
+type MappingInput struct {
+	InputSize         int
+	OutputSize        int
 	InputPercentages  []float64
 	OutputPercentages []float64
+	Reversed          bool
 }
 
-
-
 type BinParams struct {
-	NumBars int
+	NumBars   int
 	BarHeight int
 
 	InputLength int
 
-	LeftChannelFrequency *[]float32
+	LeftChannelFrequency  *[]float32
 	RightChannelFrequency *[]float32
 
-	LeftChannelOutput *[]int
+	LeftChannelOutput  *[]int
 	RightChannelOutput *[]int
 }
 
 const maxFloatValue = float32(100.0)
 
 // BuildIndexLUT  return a list of size param.InputSize that has each index of the output each index of the input goes to
-func BuildIndexLUT(params MappingInput) []int{
+func BuildIndexLUT(params MappingInput) []int {
 	currentOutput := 0.0
 	currentPercentageIndex := 0
 	nextTransitionAt := int(math.Round(params.InputPercentages[0] * float64(params.InputSize)))
-	outputPerInput :=  ( float64(params.OutputSize) * params.OutputPercentages[currentPercentageIndex]) / (float64(params.InputSize) * params.InputPercentages[currentPercentageIndex])
+	outputPerInput := (float64(params.OutputSize) * params.OutputPercentages[currentPercentageIndex]) / (float64(params.InputSize) * params.InputPercentages[currentPercentageIndex])
 
 	lut := make([]int, params.InputSize)
 	for i := range lut {
 		lut[i] = -1
 	}
-	for i := 0; i< params.InputSize; i++ {
-		if i == nextTransitionAt{
+	for i := 0; i < params.InputSize; i++ {
+		if i == nextTransitionAt {
 			// find when to next recalculate
 			currentPercentageIndex += 1
-			if currentPercentageIndex == len(params.InputPercentages) - 1 {
+			if currentPercentageIndex == len(params.InputPercentages)-1 {
 				nextTransitionAt = params.InputSize
 			} else {
-				nextTransitionAt = i + int(math.Round(params.InputPercentages[currentPercentageIndex] * float64(params.InputSize)))
+				nextTransitionAt = i + int(math.Round(params.InputPercentages[currentPercentageIndex]*float64(params.InputSize)))
 			}
 
-			outputPerInput =  ( float64(params.OutputSize) * params.OutputPercentages[currentPercentageIndex]) / (float64(params.InputSize) * params.InputPercentages[currentPercentageIndex])
+			outputPerInput = (float64(params.OutputSize) * params.OutputPercentages[currentPercentageIndex]) / (float64(params.InputSize) * params.InputPercentages[currentPercentageIndex])
 
 		}
 
 		if outputPerInput != 0 {
-			lut[i] = int(currentOutput)
+			if params.Reversed {
+				lut[i] = params.OutputSize - int(currentOutput) - 1
+			} else {
+				lut[i] = int(currentOutput)
+			}
+
 			currentOutput += outputPerInput
 		}
 	}
 	return lut
 }
 
-
 type BinInput struct {
-	Input []float32
-	MaxInputValue float32
+	Input          []float32
+	MaxInputValue  float32
 	MaxOutputValue int
-	BinningLut []int
-	NumOutputs int
+	BinningLut     []int
+	NumOutputs     int
+
+	Interpolate bool
 }
-func BinHeight( params BinInput) []int{
+
+func BinHeight(params BinInput) []int {
 	output := make([]int, params.NumOutputs)
 	outputPower := make([]float64, params.NumOutputs)
 	inputsCountPerOutput := make([]int, params.NumOutputs)
+
+	hasHardValue := make([]bool, params.NumOutputs)
+
 	for i, inputVal := range params.Input {
 		inputVal := math.Min(float64(params.MaxInputValue), float64(inputVal))
 		index := params.BinningLut[i]
 		if index == -1 {
 			continue
 		}
-		outputPower[index] += math.Pow(inputVal, 2.0)
+		// used for rms vals
+		//outputPower[index] += math.Pow(inputVal, 2.0)
+		outputPower[index] = math.Max(outputPower[index], inputVal)
+		hasHardValue[index] = true
 		inputsCountPerOutput[index] += 1
 	}
-
 	scalar := float64(float32(params.MaxOutputValue) / params.MaxInputValue)
 	// calculate the RMS of each output power
-	for i, outputPower := range outputPower {
+	for i, power := range outputPower {
 		if inputsCountPerOutput[i] == 0 {
 			continue
 		}
-		rms := math.Sqrt( 1 / float64(inputsCountPerOutput[i]) * outputPower)
-		output[i] = int(rms * scalar)
+		//rms := math.Sqrt(1 / float64(inputsCountPerOutput[i]) * outputPower)
+		output[i] = int(power * scalar)
+	}
+
+	if params.Interpolate {
+		lastKnownValue := output[0]
+		backTrackCount := 0
+		for i, knownValue := range hasHardValue {
+			if !knownValue {
+				backTrackCount += 1
+				continue
+			}
+			if backTrackCount == 0 {
+				continue
+			}
+			currentValue := output[i]
+			// linear interpolation
+			scalar := float64((currentValue - lastKnownValue) / (backTrackCount + 1))
+			for backTrackCount != 0 {
+				output[i-backTrackCount] = int(float64(currentValue) - (scalar * float64(backTrackCount)))
+				backTrackCount -= 1
+			}
+			lastKnownValue = currentValue
+		}
 	}
 	return output
+}
+
+type BinController struct {
+	maxPower int
+}
+
+func (bc *BinController) SmartBin(params BinInput) []int {
+	//output := make([]int, params.NumOutputs)
+	//outputPower := make([]float64, params.NumOutputs)
+	//inputsCountPerOutput := make([]int, params.NumOutputs)
+	//
+	//hasHardValue := make([]bool, params.NumOutputs)
+	//
+	//for i, inputVal := range params.Input {
+	//	if inputVal > bc.maxPower {
+	//		bc.maxPower =
+	//	}
+	//
+	//	inputVal := math.Min(float64(params.MaxInputValue), float64(inputVal))
+	//	index := params.BinningLut[i]
+	//	if index == -1 {
+	//		continue
+	//	}
+	//	// used for rms vals
+	//	//outputPower[index] += math.Pow(inputVal, 2.0)
+	//	if outputPower[]
+	//	outputPower[index] = math.Max(outputPower[index], maxPower)
+	//	hasHardValue[index] = true
+	//	inputsCountPerOutput[index] += 1
+	//}
+	//scalar := float64(float32(params.MaxOutputValue) / params.MaxInputValue)
+	//// calculate the RMS of each output power
+	//for i, power := range outputPower {
+	//	if inputsCountPerOutput[i] == 0 {
+	//		continue
+	//	}
+	//	//rms := math.Sqrt(1 / float64(inputsCountPerOutput[i]) * outputPower)
+	//	output[i] = int(power * scalar)
+	//}
+	//
+	//if params.Interpolate {
+	//	lastKnownValue := output[0]
+	//	backTrackCount := 0
+	//	for i, knownValue := range hasHardValue {
+	//		if !knownValue {
+	//			backTrackCount += 1
+	//			continue
+	//		}
+	//		if backTrackCount == 0 {
+	//			continue
+	//		}
+	//		currentValue := output[i]
+	//		// linear interpolation
+	//		scalar := float64((currentValue - lastKnownValue) / (backTrackCount + 1))
+	//		for backTrackCount != 0 {
+	//			output[i-backTrackCount] = int(float64(currentValue) - (scalar * float64(backTrackCount)))
+	//			backTrackCount -= 1
+	//		}
+	//		lastKnownValue = currentValue
+	//	}
+	//}
+	//return output
+	return nil
 }
 
 //// floatsPerBin Given a index of the frequency, return

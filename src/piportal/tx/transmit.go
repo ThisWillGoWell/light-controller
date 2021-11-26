@@ -7,6 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/thiswillgowell/light-controller/ratetracker"
+
 	"github.com/thiswillgowell/light-controller/color"
 	"golang.org/x/time/rate"
 )
@@ -16,28 +18,64 @@ type Connection struct {
 	counter        *int64
 	packetLimitter *rate.Limiter
 	updateLimitter *rate.Limiter
+	tracker        ratetracker.Tracker
 }
 
 func (c *Connection) WriteFrame(frame [][]color.Color) error {
 	if err := c.updateLimitter.Wait(context.Background()); err != nil {
 		return err
 	}
+	atomic.AddInt64(c.counter, 1)
+	//wg := sync.WaitGroup{}
+	//wg.Add(2)
+	//
+	//go func() {
+	//	packet := make([]byte, len(frame[0])*3+1)
+	//	for r, row := range frame[0:47] {
+	//		packet[0] = byte(uint(r))
+	//		for c, colorObj := range row {
+	//			packet[c*3+1] = colorObj.R
+	//			packet[c*3+2] = colorObj.G
+	//			packet[c*3+3] = colorObj.B
+	//		}
+	//		if _, err := c.conn.Write(packet); err != nil {
+	//			panic(err)
+	//		}
+	//	}
+	//	wg.Done()
+	//}()
+	//go func() {
+	//	packet := make([]byte, len(frame[0])*3+1)
+	//	for r, row := range frame[47 : len(frame)-2] {
+	//		packet[0] = byte(uint(r + 48))
+	//		for c, colorObj := range row {
+	//			packet[c*3+1] = colorObj.R
+	//			packet[c*3+2] = colorObj.G
+	//			packet[c*3+3] = colorObj.B
+	//		}
+	//		if _, err := c.conn.Write(packet); err != nil {
+	//			panic(err)
+	//		}
+	//	}
+	//	wg.Done()
+	//}()
+	//wg.Wait()
 	packet := make([]byte, len(frame[0])*3+1)
 	for r, row := range frame {
-		packet[0] = byte(uint(r))
+		packet[0] = byte(r)
 		for c, colorObj := range row {
 			packet[c*3+1] = colorObj.R
 			packet[c*3+2] = colorObj.G
 			packet[c*3+3] = colorObj.B
 		}
 		if _, err := c.conn.Write(packet); err != nil {
-			return err
+			panic(err)
 		}
 	}
 	return nil
 }
 
-func NewClient(address string) (*Connection, error) {
+func NewUDPClient(address string) (*Connection, error) {
 
 	c := &Connection{
 		counter:        new(int64),
@@ -46,6 +84,31 @@ func NewClient(address string) (*Connection, error) {
 	}
 	var err error
 	if c.conn, err = net.Dial("udp", address); err != nil {
+		return nil, err
+	}
+
+	go func() {
+		t := time.NewTicker(time.Second)
+		for {
+			<-t.C
+			fmt.Printf("%d requests/second\n", *c.counter)
+			atomic.SwapInt64(c.counter, 0)
+		}
+
+	}()
+
+	return c, nil
+}
+
+func NewTCPClient(address string) (*Connection, error) {
+
+	c := &Connection{
+		counter: new(int64),
+		//packetLimitter: rate.NewLimiter(rate.Every(time.Nanosecond*100), 1),
+		updateLimitter: rate.NewLimiter(140, 1),
+	}
+	var err error
+	if c.conn, err = net.Dial("tcp", address); err != nil {
 		return nil, err
 	}
 

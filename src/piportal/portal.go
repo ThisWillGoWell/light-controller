@@ -18,11 +18,11 @@ type Matrix struct {
 	Conn        *tx.Connection
 }
 
-func (m *Matrix) Height() int {
+func (m *Matrix) Rows() int {
 	return m.NumRows
 }
 
-func (m *Matrix) Width() int {
+func (m *Matrix) Cols() int {
 	return m.NumCols
 }
 
@@ -39,6 +39,13 @@ func (m *Matrix) GetPixel(row, col int) color.Color {
 }
 
 func (m *Matrix) SetPixel(row, col int, c color.Color) {
+	if row < 32 {
+		row = 31 - row
+		col = 63 - col
+	} else if row >= 64 {
+		row = 64 + (95 - row)
+		col = 63 - col
+	}
 	m.FrameBuffer[row][col] = c
 }
 
@@ -48,7 +55,7 @@ func (m *Matrix) Send() error {
 
 func NewMatrix(address string) (*Matrix, error) {
 	m := &Matrix{
-		NumRows:  64,
+		NumRows:  96,
 		NumCols:  64,
 		Address:  address,
 		BitDepth: 8,
@@ -59,7 +66,7 @@ func NewMatrix(address string) (*Matrix, error) {
 		m.FrameBuffer = append(m.FrameBuffer, make([]color.Color, m.NumCols))
 	}
 
-	conn, err := tx.NewClient(address)
+	conn, err := tx.NewTCPClient(address)
 
 	if err != nil {
 		return nil, err
