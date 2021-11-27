@@ -1,13 +1,16 @@
-package main
+package benchtest
 
 import (
+	"testing"
+	"time"
+
 	"github.com/thiswillgowell/light-controller/src/controller/pattern/music"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
 	"github.com/thiswillgowell/light-controller/src/display"
 	"github.com/thiswillgowell/light-controller/src/piportal"
 )
 
-func main() {
+func TestProfile(t *testing.T) {
 	daisyDevice, err := daisy.InitDaisy()
 	if err != nil {
 		panic(err)
@@ -28,5 +31,8 @@ func main() {
 		matrixRightDisplay,
 	)
 
-	music.CenterHollowVUBarDouble(daisyDevice, combindedDispaly, 1)
+	go func() {
+		music.CenterHollowVUBarDouble(daisyDevice, combindedDispaly, 1)
+	}()
+	<-time.After(time.Second * 3)
 }

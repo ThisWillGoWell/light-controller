@@ -1,11 +1,10 @@
 package display
 
 import (
-	"fmt"
-	"strings"
+	"image"
+	"image/color"
+	"image/draw"
 	"sync"
-
-	"github.com/thiswillgowell/light-controller/color"
 )
 
 type MultiDisplayArrangement int
@@ -26,93 +25,86 @@ type MultiDisplay struct {
 	// given a index of dispaly, return where along the arrangemnt it lies
 	StartLocations []int
 	wg             *sync.WaitGroup
+	BoundingBox    image.Rectangle
 }
 
-func (m *MultiDisplay) Rows() int {
-	return m.NumRows
+func (m *MultiDisplay) ColorModel() color.Model {
+	return color.RGBAModel
 }
 
-func (m *MultiDisplay) Cols() int {
-	return m.NumCols
+func (m *MultiDisplay) Bounds() image.Rectangle {
+	return m.BoundingBox
 }
 
-func (m *MultiDisplay) Clear() {
-	for _, d := range m.Displays {
-		d.Clear()
-	}
-}
-
-func (m *MultiDisplay) GetPixel(row, col int) color.Color {
+func (m *MultiDisplay) At(x, y int) color.Color {
 	displayIndex := 0
 	switch m.Arrangement {
 	case ArrangementVertical:
-		displayIndex = m.DisplayLookup[row]
-		return m.Displays[displayIndex].GetPixel(row-m.StartLocations[displayIndex], col)
+		displayIndex = m.DisplayLookup[y]
+		return m.Displays[displayIndex].Image().At(x, y-m.StartLocations[displayIndex])
 	case ArrangementHorizontal:
-		displayIndex = m.DisplayLookup[col]
-		return m.Displays[displayIndex].GetPixel(row, col-m.StartLocations[displayIndex])
+		displayIndex = m.DisplayLookup[x]
+		return m.Displays[displayIndex].Image().At(x-m.StartLocations[displayIndex], y)
 	}
-	return color.Off
+	return color.RGBA{}
 }
 
-func (m *MultiDisplay) SetPixel(row, col int, c color.Color) {
+func (m *MultiDisplay) Set(x, y int, c color.Color) {
 	displayIndex := 0
 	switch m.Arrangement {
 	case ArrangementVertical:
-		displayIndex = m.DisplayLookup[row]
-		m.Displays[displayIndex].SetPixel(row-m.StartLocations[displayIndex], col, c)
+		displayIndex = m.DisplayLookup[y]
+		m.Displays[displayIndex].Image().Set(y-m.StartLocations[displayIndex], x, c)
 	case ArrangementHorizontal:
-		displayIndex = m.DisplayLookup[col]
-		m.Displays[displayIndex].SetPixel(row, col-m.StartLocations[displayIndex], c)
+		displayIndex = m.DisplayLookup[x]
+		m.Displays[displayIndex].Image().Set(x-m.StartLocations[displayIndex], y, c)
 	}
 }
 
-func (m *MultiDisplay) Send() error {
+func (m *MultiDisplay) Update() {
 	m.wg.Add(len(m.Displays))
-	errors := make([]string, len(m.Displays))
-	foundErr := false
 	for i, d := range m.Displays {
 		go func(i int, d Display) {
-			if err := d.Send(); err != nil {
-				foundErr = true
-				errors[i] = err.Error()
-			}
+			d.Update()
 			m.wg.Done()
 		}(i, d)
 	}
 	m.wg.Wait()
+}
 
-	if foundErr {
-		return fmt.Errorf("failed to write to sub-display errs=", strings.Join(errors, ","))
-	}
-	return nil
+func (m *MultiDisplay) UpdateImage(newImage image.Image) {
+	draw.Draw(m, m.BoundingBox, newImage, image.Point{}, draw.Src)
+	m.Update()
+}
+
+func (m *MultiDisplay) Image() draw.Image {
+	return m
 }
 
 func NewMultiDisplay(arrangement MultiDisplayArrangement, displays ...Display) *MultiDisplay {
 	md := &MultiDisplay{
-		Arrangement: arrangement,
-		Displays:    displays,
-		wg:          &sync.WaitGroup{},
+		Displays: displays,
+		wg:       &sync.WaitGroup{},
 	}
 
 	count := 0
 	enforceSize := 0
 	startCount := 0
-	for displayIndex, d := range displays {
 
+	for displayIndex, d := range displays {
 		switch arrangement {
 		case ArrangementVertical:
-			count = d.Rows()
+			count = d.Image().Bounds().Max.Y
 			if enforceSize == 0 {
-				enforceSize = d.Cols()
-			} else if enforceSize != d.Cols() {
+				enforceSize = d.Image().Bounds().Max.X
+			} else if enforceSize != d.Image().Bounds().Max.X {
 				panic("incorrect number of cols, display not square")
 			}
 		case ArrangementHorizontal:
-			count = d.Cols()
+			count = d.Image().Bounds().Max.X
 			if enforceSize == 0 {
-				enforceSize = d.Rows()
-			} else if enforceSize != d.Rows() {
+				enforceSize = d.Image().Bounds().Max.Y
+			} else if enforceSize != d.Image().Bounds().Max.Y {
 				panic("incorrect number of rows, display not square")
 			}
 		}
@@ -131,7 +123,7 @@ func NewMultiDisplay(arrangement MultiDisplayArrangement, displays ...Display) *
 		md.NumRows = len(md.DisplayLookup)
 		md.NumCols = enforceSize
 	}
-
+	md.BoundingBox = image.Rect(0, 0, md.NumCols, md.NumRows)
 	return md
 
 }

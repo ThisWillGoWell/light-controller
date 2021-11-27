@@ -1,7 +1,16 @@
 package music
 
 import (
+	"image/color"
 	"math"
+
+	"github.com/thiswillgowell/light-controller/src/graphics"
+	"golang.org/x/image/colornames"
+
+	"github.com/fogleman/gg"
+
+	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
+	"github.com/thiswillgowell/light-controller/src/display"
 )
 
 type MappingInput struct {
@@ -253,3 +262,256 @@ func (bc *BinController) SmartBin(params BinInput) []int {
 //	return barHeight
 //
 //}
+//
+//func CenterVUBar(daisyDevice *daisy.Daisy, display display.Display) {
+//	colors := color_2.LinerGradient(color_2.Darkred, color_2.Purple, display.Cols(), false)
+//	lut := BuildIndexLUT(MappingInput{
+//		InputSize:         daisy.NumFrequencies,
+//		OutputSize:        display.Cols(),
+//		InputPercentages:  []float64{0.4, 0.3, 0.3},
+//		OutputPercentages: []float64{0.5, 0.4, 0.1},
+//		Reversed:          true,
+//	})
+//
+//	for channel := range daisyDevice.FFTChannel {
+//		controller.ForEach(display, controller.DarkenDisplay(.3))
+//		leftBars := BinHeight(BinInput{
+//			Input:          channel[0],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: display.Rows() / 2,
+//			BinningLut:     lut,
+//			NumOutputs:     display.Cols(),
+//		})
+//		// left is top half of the display
+//		startRow := display.Rows() / 2
+//		for col, height := range leftBars {
+//			for i := 0; i < height; i++ {
+//				display.SetPixel(startRow+i, col, colors[col])
+//			}
+//		}
+//
+//		rightBars := BinHeight(BinInput{
+//			Input:          channel[1],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: display.Rows() / 2,
+//			BinningLut:     lut,
+//			NumOutputs:     display.Cols(),
+//		})
+//
+//		// right is top half of the display, but looking down
+//		startRow = display.Rows()/2 - 1
+//		for col, height := range rightBars {
+//			for i := 0; i < height; i++ {
+//				display.SetPixel(startRow-i, col, colors[col])
+//			}
+//		}
+//		display.Send()
+//	}
+//}
+//
+//func CenterHollowVUBar(daisyDevice *daisy.Daisy, display display.Display) {
+//	colors := color_2.LinerGradient(color_2.Darkred, color_2.Purple, display.Cols(), false)
+//	lut := BuildIndexLUT(MappingInput{
+//		InputSize:         daisy.NumFrequencies,
+//		OutputSize:        display.Cols(),
+//		InputPercentages:  []float64{0.4, 0.3, 0.3},
+//		OutputPercentages: []float64{0.5, 0.4, 0.1},
+//		Reversed:          true,
+//	})
+//	image :=
+//	for channel := range daisyDevice.FFTChannel {
+//		controller.ForEach(display, controller.DarkenDisplay(.2))
+//		//display.Clear()
+//		leftBars := BinHeight(BinInput{
+//			Input:          channel[0],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: display.Rows() / 2,
+//			BinningLut:     lut,
+//			NumOutputs:     display.Cols(),
+//		})
+//		// left is top half of the display
+//		startRow := display.Rows() / 2
+//		for col, height := range leftBars {
+//			for i := 0; i < height; i++ {
+//				c := colors[col].DarkenPercentage(float64(i+2) / float64(height))
+//				display.SetPixel(startRow+i, col, c)
+//			}
+//		}
+//
+//		rightBars := BinHeight(BinInput{
+//			Input:          channel[1],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: display.Rows() / 2,
+//			BinningLut:     lut,
+//			NumOutputs:     display.Cols(),
+//		})
+//
+//		// right is top half of the display, but looking down
+//		startRow = display.Rows()/2 - 1
+//		for col, height := range rightBars {
+//			for i := 0; i < height; i++ {
+//				c := colors[col].DarkenPercentage(float64(i+2) / float64(height))
+//				display.SetPixel(startRow-i, col, c)
+//			}
+//		}
+//		display.Send()
+//	}
+//}
+
+func CenterHollowVUBarDouble(daisyDevice *daisy.Daisy, display display.Display, barWidth int) {
+	targetImage := display.Image()
+	numBars := targetImage.Bounds().Size().X / barWidth
+	colors := graphics.LinerGradient(colornames.Purple, colornames.Darkorange, numBars)
+	lut := BuildIndexLUT(MappingInput{
+		InputSize:         daisy.NumFrequencies,
+		OutputSize:        numBars,
+		InputPercentages:  []float64{0.4, 0.3, 0.3},
+		OutputPercentages: []float64{0.5, 0.4, 0.1},
+		Reversed:          false,
+	})
+
+	gg.NewContext(targetImage.Bounds().Size().X, targetImage.Bounds().Size().Y)
+	dc := gg.NewContextForImage(targetImage)
+	for channel := range daisyDevice.FFTChannel {
+		dc.SetColor(color.Transparent)
+		dc.Clear()
+		leftBars := removeDeadZones(BinHeight(BinInput{
+			Input:          channel[0],
+			MaxInputValue:  200.0,
+			MaxOutputValue: targetImage.Bounds().Size().Y / 2 * 5 / 6,
+			BinningLut:     lut,
+			NumOutputs:     numBars,
+			Interpolate:    true,
+		}))
+		// left is top half of the display
+		startRow := targetImage.Bounds().Size().Y / 2
+
+		for col, barPower := range leftBars {
+			c := colors[col]
+			// 0 - 30%
+			var barColors []color.Color
+			if barPower < 3 {
+				c = graphics.Darken(c, 1-float64(barPower)*.1)
+				barColors = []color.Color{c}
+			} else {
+				// 30% -> 100%
+				barColors = graphics.LinerGradient(graphics.Darken(c, .7), c, barPower-2)
+			}
+
+			for i, c := range barColors {
+				dc.SetColor(c)
+				for j := 0; j < barWidth; j++ {
+					dc.SetPixel(col*barWidth+j, startRow+i)
+				}
+			}
+		}
+
+		rightBars := removeDeadZones(BinHeight(BinInput{
+			Input:          channel[1],
+			MaxInputValue:  200.0,
+			MaxOutputValue: targetImage.Bounds().Size().Y / 2 * 5 / 6,
+			BinningLut:     lut,
+			NumOutputs:     numBars,
+			Interpolate:    true,
+		}))
+
+		// right is top half of the display, but looking down
+		for col, barPower := range rightBars {
+			c := colors[col]
+			// 0 - 30%
+			var barColors []color.Color
+			if barPower < 3 {
+				c = graphics.Darken(c, 1-float64(barPower)*.1)
+				barColors = []color.Color{c}
+			} else {
+				// 30% -> 100%
+				barColors = graphics.LinerGradient(graphics.Darken(c, .7), c, barPower-2)
+			}
+			for i, c := range barColors {
+				dc.SetColor(c)
+				for j := 0; j < barWidth; j++ {
+					dc.SetPixel(col*barWidth+j, startRow-i-1)
+				}
+			}
+		}
+		display.UpdateImage(dc.Image())
+	}
+}
+
+//
+//func FallingVuMeter(daisyDevice *daisy.Daisy, display display.Display) {
+//	colors := color_2.LinerGradient(color_2.Darkred, color_2.ForestGreen, display.Rows(), true)
+//	lut := BuildIndexLUT(MappingInput{
+//		InputSize:         daisy.NumFrequencies,
+//		OutputSize:        display.Cols() / 2,
+//		InputPercentages:  []float64{0.4, 0.3, 0.3},
+//		OutputPercentages: []float64{0.5, 0.4, 0.1},
+//		Reversed:          false,
+//	})
+//
+//	for channel := range daisyDevice.FFTChannel {
+//		controller.ForEach(display, controller.DarkenDisplay(.3))
+//		leftBars := BinHeight(BinInput{
+//			Input:          channel[0],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: display.Rows(),
+//			BinningLut:     lut,
+//			NumOutputs:     display.Cols() / 2,
+//		})
+//		// left is top half of the display
+//		startRow := display.Rows() / 2
+//		for col, height := range leftBars {
+//			c := colors[col]
+//			if height < 4 {
+//				c = c.DarkenPercentage(float64(5-height) * .1)
+//			}
+//
+//			for i := 0; i < height; i++ {
+//				c := c.DarkenPercentage(float64(i) / float64(height))
+//				display.SetPixel(startRow+i, col*2, c)
+//				display.SetPixel(startRow+i, col*2+1, c)
+//			}
+//		}
+//
+//		rightBars := BinHeight(BinInput{
+//			Input:          channel[1],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: display.Rows() / 2,
+//			BinningLut:     lut,
+//			NumOutputs:     display.Cols() / 2,
+//		})
+//
+//		// right is top half of the display, but looking down
+//		startRow = display.Rows()/2 - 1
+//		for col, height := range rightBars {
+//			c := colors[col]
+//			if height < 4 {
+//				c = c.DarkenPercentage(float64(5-height) * .1)
+//			}
+//			for i := 0; i < height; i++ {
+//				c := c.DarkenPercentage(float64(i) / float64(height))
+//				display.SetPixel(startRow-i, col*2, c)
+//				display.SetPixel(startRow-i, col*2+1, c)
+//			}
+//		}
+//		display.Send()
+//	}
+//}
+
+func removeDeadZones(input []int) []int {
+	for i, ele := range input {
+		if i == 0 || i == len(input)-1 {
+			continue
+		}
+		// leave alone if bigger than one
+		if ele > 1 {
+			continue
+		}
+		// set to zero if previous value < 1 and next value is < 1
+
+		if input[i-1] <= 1 && input[i+1] <= 1 {
+			input[i] = 0
+		}
+	}
+	return input
+}

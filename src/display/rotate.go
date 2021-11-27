@@ -1,7 +1,9 @@
 package display
 
 import (
-	"github.com/thiswillgowell/light-controller/color"
+	"image"
+	"image/color"
+	"image/draw"
 )
 
 type Rotation int
@@ -15,28 +17,59 @@ const (
 
 type TransposeFunc func(int, int) (int, int)
 
-func noRotation(inR, inC int) (int, int) {
-	return inR, inC
+func noRotation(x, y int) (int, int) {
+	return x, y
 }
 
-func rotateCounterClockwise(inR, inC int) (int, int) {
-	return inC, inR
+func rotateCounterClockwise(x, y int) (int, int) {
+	return y, x
 }
 
-func rotate180(inRows, inCols int) func(int, int) (int, int) {
-	return func(inR int, inC int) (int, int) {
-		return inRows - inR - 1, inCols - inC - 1
+func rotate180(inX, inY int) func(int, int) (int, int) {
+	return func(x int, y int) (int, int) {
+		return inX - x - 1, inY - y - 1
 	}
 }
 
 type VirtualDisplayRotation struct {
-	numRows           int
-	numCols           int
+	X                 int
+	Y                 int
 	underlyingDisplay Display
 	transposeFunc     TransposeFunc
+	boundingBox       image.Rectangle
 }
 
-func NewRotation(d Display, rotationType Rotation) Display {
+func (v *VirtualDisplayRotation) Image() draw.Image {
+	return v
+}
+
+func (v *VirtualDisplayRotation) UpdateImage(src image.Image) {
+	draw.Draw(v, v.Bounds(), src, image.Point{}, draw.Src)
+}
+
+func (v *VirtualDisplayRotation) Update() {
+	v.underlyingDisplay.Update()
+}
+
+func (v *VirtualDisplayRotation) ColorModel() color.Model {
+	return color.RGBAModel
+}
+
+func (v *VirtualDisplayRotation) Bounds() image.Rectangle {
+	return v.boundingBox
+}
+
+func (v *VirtualDisplayRotation) At(x, y int) color.Color {
+	x, y = v.transposeFunc(x, y)
+	return v.underlyingDisplay.Image().At(x, y)
+}
+
+func (v *VirtualDisplayRotation) Set(x, y int, c color.Color) {
+	x, y = v.transposeFunc(x, y)
+	v.underlyingDisplay.Image().Set(x, y, c)
+}
+
+func NewRotation(d Display, rotationType Rotation) *VirtualDisplayRotation {
 
 	dRotate := &VirtualDisplayRotation{
 		underlyingDisplay: d,
@@ -44,44 +77,19 @@ func NewRotation(d Display, rotationType Rotation) Display {
 	switch rotationType {
 	case NoRotation:
 		dRotate.transposeFunc = noRotation
-		dRotate.numRows = d.Rows()
-		dRotate.numCols = d.Cols()
+		dRotate.Y = d.Image().Bounds().Size().Y
+		dRotate.X = d.Image().Bounds().Size().X
 	case Clockwise:
 		panic("not impl")
 	case OneEighty:
-		dRotate.numRows = d.Rows()
-		dRotate.numCols = d.Cols()
-		dRotate.transposeFunc = rotate180(d.Rows(), d.Cols())
+		dRotate.X = d.Image().Bounds().Size().X
+		dRotate.Y = d.Image().Bounds().Size().Y
+		dRotate.transposeFunc = rotate180(d.Image().Bounds().Size().X, d.Image().Bounds().Size().Y)
 	case CounterClockwise:
-		dRotate.numRows = d.Cols()
-		dRotate.numCols = d.Rows()
+		dRotate.Y = d.Image().Bounds().Size().X
+		dRotate.X = d.Image().Bounds().Size().Y
 		dRotate.transposeFunc = rotateCounterClockwise
 	}
+	dRotate.boundingBox = image.Rect(0, 0, dRotate.X, dRotate.Y)
 	return dRotate
-}
-
-func (v VirtualDisplayRotation) Rows() int {
-	return v.numRows
-}
-
-func (v VirtualDisplayRotation) Cols() int {
-	return v.numCols
-}
-
-func (v VirtualDisplayRotation) Clear() {
-	v.underlyingDisplay.Clear()
-}
-
-func (v VirtualDisplayRotation) GetPixel(row, col int) color.Color {
-	r, c := v.transposeFunc(row, col)
-	return v.underlyingDisplay.GetPixel(r, c)
-}
-
-func (v VirtualDisplayRotation) SetPixel(row, col int, c color.Color) {
-	r, col := v.transposeFunc(row, col)
-	v.underlyingDisplay.SetPixel(r, col, c)
-}
-
-func (v VirtualDisplayRotation) Send() error {
-	return v.underlyingDisplay.Send()
 }

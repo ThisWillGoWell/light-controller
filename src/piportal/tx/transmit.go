@@ -3,76 +3,58 @@ package tx
 import (
 	"context"
 	"fmt"
+	"image"
 	"net"
 	"sync/atomic"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/thiswillgowell/light-controller/ratetracker"
 
-	"github.com/thiswillgowell/light-controller/color"
 	"golang.org/x/time/rate"
 )
 
 type Connection struct {
 	conn           net.Conn
+	address        string
 	counter        *int64
 	packetLimitter *rate.Limiter
 	updateLimitter *rate.Limiter
 	tracker        ratetracker.Tracker
+	reconnect      func()
 }
 
-func (c *Connection) WriteFrame(frame [][]color.Color) error {
+func (c *Connection) WriteFrame(image *image.RGBA) {
 	if err := c.updateLimitter.Wait(context.Background()); err != nil {
-		return err
+		zap.S().Errorw("failed to wait on update limiter", zap.Error(err))
+		return
+	}
+	if c.conn == nil {
+		return
 	}
 	atomic.AddInt64(c.counter, 1)
-	//wg := sync.WaitGroup{}
-	//wg.Add(2)
-	//
-	//go func() {
-	//	packet := make([]byte, len(frame[0])*3+1)
-	//	for r, row := range frame[0:47] {
-	//		packet[0] = byte(uint(r))
-	//		for c, colorObj := range row {
-	//			packet[c*3+1] = colorObj.R
-	//			packet[c*3+2] = colorObj.G
-	//			packet[c*3+3] = colorObj.B
-	//		}
-	//		if _, err := c.conn.Write(packet); err != nil {
-	//			panic(err)
-	//		}
-	//	}
-	//	wg.Done()
-	//}()
-	//go func() {
-	//	packet := make([]byte, len(frame[0])*3+1)
-	//	for r, row := range frame[47 : len(frame)-2] {
-	//		packet[0] = byte(uint(r + 48))
-	//		for c, colorObj := range row {
-	//			packet[c*3+1] = colorObj.R
-	//			packet[c*3+2] = colorObj.G
-	//			packet[c*3+3] = colorObj.B
-	//		}
-	//		if _, err := c.conn.Write(packet); err != nil {
-	//			panic(err)
-	//		}
-	//	}
-	//	wg.Done()
-	//}()
-	//wg.Wait()
-	packet := make([]byte, len(frame[0])*3+1)
-	for r, row := range frame {
-		packet[0] = byte(r)
-		for c, colorObj := range row {
-			packet[c*3+1] = colorObj.R
-			packet[c*3+2] = colorObj.G
-			packet[c*3+3] = colorObj.B
+
+	maxX := image.Rect.Max.X
+	maxY := image.Rect.Max.Y
+
+	packet := make([]byte, maxX*3+1)
+
+	for y := 0; y < maxY; y++ {
+		packet[0] = byte(y)
+		for x := 0; x < maxX; x++ {
+			r, g, b, _ := image.RGBAAt(x, y).RGBA()
+			packet[x*3+1] = uint8(r)
+			packet[x*3+2] = uint8(g)
+			packet[x*3+3] = uint8(b)
 		}
 		if _, err := c.conn.Write(packet); err != nil {
-			panic(err)
+			zap.S().Warnw("error when writing to display, starting the reconnect process...", zap.Error(err))
+			_ = c.conn.Close()
+			c.conn = nil
+			go c.reconnect()
 		}
 	}
-	return nil
 }
 
 func NewUDPClient(address string) (*Connection, error) {
@@ -104,12 +86,15 @@ func NewTCPClient(address string) (*Connection, error) {
 
 	c := &Connection{
 		counter: new(int64),
+		address: address,
 		//packetLimitter: rate.NewLimiter(rate.Every(time.Nanosecond*100), 1),
-		updateLimitter: rate.NewLimiter(140, 1),
+		updateLimitter: rate.NewLimiter(100, 1),
 	}
+
 	var err error
 	if c.conn, err = net.Dial("tcp", address); err != nil {
-		return nil, err
+		zap.S().Warnw("could not connect to client, starting reconnect", zap.Error(err))
+
 	}
 
 	go func() {
@@ -123,4 +108,15 @@ func NewTCPClient(address string) (*Connection, error) {
 	}()
 
 	return c, nil
+}
+
+func (c *Connection) reconnectTCP(address string) func() {
+	return func() {
+		var err error
+		if c.conn, err = net.Dial("tcp", address); err == nil {
+			zap.S().Infow("reconnected to portal", "address", address)
+			return
+		}
+		<-time.After(time.Second * 15)
+	}
 }

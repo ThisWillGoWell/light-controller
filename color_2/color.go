@@ -1,4 +1,4 @@
-package color
+package color_2
 
 import (
 	"math"
@@ -150,7 +150,7 @@ func (c Color) RandBetween(c2 Color) Color {
 	return newC
 }
 
-// Hsv returns the Hsv [0..360], Saturation and Value [0..1] of the color.
+// Hsv returns the Hsv [0..360], Saturation and Value [0..1] of the color_2.
 func RgbToHsv(red, green, blue uint8) (uint16, uint8, uint8) {
 	R := float64(red) / 255
 	G := float64(green) / 255
@@ -190,7 +190,7 @@ func RgbToHsv(red, green, blue uint8) (uint16, uint8, uint8) {
 // From http://en.wikipedia.org/wiki/HSL_and_HSV
 // Note that h is in [0..360] and s,v in [0..1]
 
-// Hsv returns the Hsv [0..360], Saturation and Value [0..1] of the color.
+// Hsv returns the Hsv [0..360], Saturation and Value [0..1] of the color_2.
 func HsvToRgb(hue uint16, sat, value uint8) (uint8, uint8, uint8) {
 	H := float64(hue) / 65535 * 360
 	S := float64(sat) / 255
