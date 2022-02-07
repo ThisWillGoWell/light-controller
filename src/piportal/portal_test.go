@@ -61,7 +61,7 @@ func randomCubic(dc *gg.Context) {
 
 func TestPortal(t *testing.T) {
 
-	p, err := NewMatrix("192.168.1.63:8080")
+	p, err := NewMatrix("192.168.1.83:8080")
 	if err != nil {
 		panic(err)
 	}
@@ -80,6 +80,6 @@ func TestPortal(t *testing.T) {
 	dc.Stroke()
 	dc.DrawCircle(32, 48, 80)
 	dc.Stroke()
-
+	p.Update()
 	<-time.After(time.Second)
 }

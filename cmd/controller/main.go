@@ -18,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	matrixLeftDisplay, err := piportal.NewMatrix("192.168.1.63:8080")
+	matrixLeftDisplay, err := piportal.NewMatrix("192.168.1.83:8080")
 	if err != nil {
 		panic(err)
 	}
