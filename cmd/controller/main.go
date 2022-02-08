@@ -24,8 +24,8 @@ func main() {
 	}
 
 	combindedDispaly := display.NewMultiDisplay(display.ArrangementHorizontal,
-		display.NewRotation(matrixLeftDisplay, display.OneEighty),
-		matrixRightDisplay,
+		display.NewRotation(matrixRightDisplay, display.OneEighty),
+		matrixLeftDisplay,
 	)
 
 	music.CenterHollowVUBarDouble(daisyDevice, combindedDispaly, 1)
