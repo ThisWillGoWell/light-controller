@@ -53,6 +53,7 @@ func (v *VirtualDisplayRotation) Image() draw.Image {
 
 func (v *VirtualDisplayRotation) UpdateImage(src image.Image) {
 	draw.Draw(v, v.Bounds(), src, image.Point{}, draw.Src)
+	v.Update()
 }
 
 func (v *VirtualDisplayRotation) Update() {
@@ -88,7 +89,9 @@ func NewRotation(d Display, rotationType Rotation) *VirtualDisplayRotation {
 		dRotate.Y = d.Image().Bounds().Size().Y
 		dRotate.X = d.Image().Bounds().Size().X
 	case Clockwise:
-		panic("not impl")
+		dRotate.Y = d.Image().Bounds().Size().X
+		dRotate.X = d.Image().Bounds().Size().Y
+		dRotate.transposeFunc = rotateCounterClockwise
 	case OneEighty:
 		dRotate.X = d.Image().Bounds().Size().X
 		dRotate.Y = d.Image().Bounds().Size().Y

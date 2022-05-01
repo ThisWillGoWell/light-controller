@@ -2,13 +2,14 @@ package display
 
 import (
 	"image"
+	"image/draw"
 )
 
 type MirrorDisplay struct {
 	displays []Display
 }
 
-func (m MirrorDisplay) Image() image.Image {
+func (m MirrorDisplay) Image() draw.Image {
 	return m.displays[0].Image()
 }
 
