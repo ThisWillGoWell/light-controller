@@ -13,6 +13,7 @@ const (
 	Clockwise
 	CounterClockwise
 	OneEighty
+	MirrorAcrossY
 )
 
 type TransposeFunc func(int, int) (int, int)
@@ -28,6 +29,13 @@ func rotateCounterClockwise(x, y int) (int, int) {
 func rotate180(inX, inY int) func(int, int) (int, int) {
 	return func(x int, y int) (int, int) {
 		return inX - x - 1, inY - y - 1
+	}
+}
+
+//
+func mirrorAcrossY(maxY int) TransposeFunc {
+	return func(x int, y int) (int, int) {
+		return x, maxY - 1 - y
 	}
 }
 
@@ -89,6 +97,10 @@ func NewRotation(d Display, rotationType Rotation) *VirtualDisplayRotation {
 		dRotate.Y = d.Image().Bounds().Size().X
 		dRotate.X = d.Image().Bounds().Size().Y
 		dRotate.transposeFunc = rotateCounterClockwise
+	case MirrorAcrossY:
+		dRotate.Y = d.Image().Bounds().Size().Y
+		dRotate.X = d.Image().Bounds().Size().X
+		dRotate.transposeFunc = mirrorAcrossY(dRotate.Y)
 	}
 	dRotate.boundingBox = image.Rect(0, 0, dRotate.X, dRotate.Y)
 	return dRotate

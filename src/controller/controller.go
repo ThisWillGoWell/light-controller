@@ -11,13 +11,13 @@ type Controller struct {
 	Displays map[string]display.Display
 }
 
-func ForEach(d display.Display, each func(row, col int, c color_2.Color) color_2.Color) {
-	for r := 0; r < d.Rows(); r++ {
-		for c := 0; c < d.Cols(); c++ {
-			d.SetPixel(r, c, each(r, c, d.GetPixel(r, c)))
-		}
-	}
-}
+//func ForEach(d display.Display, each func(row, col int, c color_2.Color) color_2.Color) {
+//	for r := 0; r < d.Image().Bounds()..Rows(); r++ {
+//		for c := 0; c < d.Cols(); c++ {
+//			d.SetPixel(r, c, each(r, c, d.GetPixel(r, c)))
+//		}
+//	}
+//}
 
 func DarkenDisplay(amount float64) func(int, int, color_2.Color) color_2.Color {
 	return func(_, _ int, c color_2.Color) color_2.Color {

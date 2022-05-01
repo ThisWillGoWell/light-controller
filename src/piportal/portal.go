@@ -3,13 +3,11 @@ package piportal
 import (
 	"image"
 	"image/draw"
-
-	"github.com/thiswillgowell/light-controller/src/piportal/tx"
 )
 
 type Matrix struct {
 	image *image.RGBA
-	Conn  *tx.Connection
+	Conn  *Connection
 }
 
 func (m *Matrix) Image() draw.Image {
@@ -21,11 +19,18 @@ func (m *Matrix) UpdateImage(src image.Image) {
 	m.Update()
 }
 
-func NewMatrix(address string) (*Matrix, error) {
+type PortalMode int
+
+const (
+	Right PortalMode = iota
+	Left
+)
+
+func NewMatrix(address string, mode PortalMode) (*Matrix, error) {
 	m := &Matrix{
 		image: image.NewRGBA(image.Rect(0, 0, 64, 96)),
 	}
-	conn, err := tx.NewTCPClient(address)
+	conn, err := NewTCPClient(address, mode)
 
 	if err != nil {
 		return nil, err

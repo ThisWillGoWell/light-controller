@@ -2,16 +2,30 @@
 <project version="4">
   <component name="RemoteTargetsManager">
     <targets>
-      <target name="pi@192.168.1.63:22" type="ssh/sftp">
+      <target name="pi@192.168.1.63:22" type="ssh/sftp" uuid="8e162548-d33b-4e52-b5a6-c6ce3103dcd6">
         <config>
           <option name="projectRootOnTarget" value="/home/pi/light-controller" />
-          <option name="serverName" value="pi@192.168.1.63:22 password" />
+          <option name="serverName" value="pi@192.168.1.84:22 key" />
         </config>
         <ContributedStateBase type="GoLanguageRuntime">
           <config>
             <option name="goPath" value="/home/pi/go" />
             <option name="goRoot" value="/usr/local/go/bin/go" />
             <option name="goVersion" value="go1.16.10 linux/arm" />
+          </config>
+        </ContributedStateBase>
+      </target>
+      <target name="will@192.168.1.105:22" type="ssh/sftp" uuid="092b78f5-526f-4c82-ad92-60430e7f1ee7">
+        <config>
+          <option name="projectRootOnTarget" value="/home/will/light-controller" />
+          <option name="serverName" value="will@192.168.1.105:22 agent" />
+          <option name="useRsync" value="true" />
+        </config>
+        <ContributedStateBase type="GoLanguageRuntime">
+          <config>
+            <option name="goPath" value="/home/will/go" />
+            <option name="goRoot" value="/usr/local/go/bin/go" />
+            <option name="goVersion" value="go1.18.1 linux/amd64" />
           </config>
         </ContributedStateBase>
       </target>

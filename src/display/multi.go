@@ -54,7 +54,7 @@ func (m *MultiDisplay) Set(x, y int, c color.Color) {
 	switch m.Arrangement {
 	case ArrangementVertical:
 		displayIndex = m.DisplayLookup[y]
-		m.Displays[displayIndex].Image().Set(y-m.StartLocations[displayIndex], x, c)
+		m.Displays[displayIndex].Image().Set(x, y-m.StartLocations[displayIndex], c)
 	case ArrangementHorizontal:
 		displayIndex = m.DisplayLookup[x]
 		m.Displays[displayIndex].Image().Set(x-m.StartLocations[displayIndex], y, c)
@@ -90,7 +90,7 @@ func NewMultiDisplay(arrangement MultiDisplayArrangement, displays ...Display) *
 	count := 0
 	enforceSize := 0
 	startCount := 0
-
+	md.Arrangement = arrangement
 	for displayIndex, d := range displays {
 		switch arrangement {
 		case ArrangementVertical:
@@ -98,14 +98,14 @@ func NewMultiDisplay(arrangement MultiDisplayArrangement, displays ...Display) *
 			if enforceSize == 0 {
 				enforceSize = d.Image().Bounds().Max.X
 			} else if enforceSize != d.Image().Bounds().Max.X {
-				panic("incorrect number of cols, display not square")
+				panic("incorrect number of cols, display not a rectangle")
 			}
 		case ArrangementHorizontal:
 			count = d.Image().Bounds().Max.X
 			if enforceSize == 0 {
 				enforceSize = d.Image().Bounds().Max.Y
 			} else if enforceSize != d.Image().Bounds().Max.Y {
-				panic("incorrect number of rows, display not square")
+				panic("incorrect number of rows, display not a rectangle")
 			}
 		}
 		for i := 0; i < count; i++ {

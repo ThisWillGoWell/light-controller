@@ -1,3 +1,3 @@
 package daisy
 
-const port = "/dev/ttyS0"
+const port = "/dev/ttyACM0"

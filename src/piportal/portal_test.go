@@ -1,6 +1,8 @@
 package piportal
 
 import (
+	"github.com/thiswillgowell/light-controller/src/display"
+	"image"
 	"image/color"
 	"math/rand"
 	"testing"
@@ -59,9 +61,50 @@ func randomCubic(dc *gg.Context) {
 	drawPoints(dc)
 }
 
+func TestPortals(t *testing.T) {
+	p1, err := NewMatrix("192.168.1.53:8080", Right)
+	if err != nil {
+		panic(err)
+	}
+	p2, err := NewMatrix("192.168.1.83:8080", Left)
+	if err != nil {
+		panic(err)
+	}
+
+	p := display.NewRotation(display.NewMultiDisplay(display.ArrangementVertical, display.NewRotation(p2, display.MirrorAcrossY), p1), display.MirrorAcrossY)
+
+	//p := display.NewMirrorDisplay(p1, display.NewRotation(p2, display.MirrorAcrossY))
+
+	img := image.NewRGBA(p.Image().Bounds())
+	dc := gg.NewContextForRGBA(img)
+	maxX, maxY := float64(p.Image().Bounds().Max.X), float64(p.Image().Bounds().Max.Y)
+	for x := 0; x < p.Image().Bounds().Max.X; x++ {
+		dc.Clear()
+		grad := gg.NewRadialGradient(maxX/2, maxY/2, 10, maxX/2, maxY/2, 80)
+		grad.AddColorStop(0, color.RGBA{10, 50, 0, 255})
+		grad.AddColorStop(1, color.RGBA{60, 0, 40, 255})
+
+		dc.SetFillStyle(grad)
+		dc.DrawRectangle(1, 1, maxX-2, maxY-2)
+		dc.Fill()
+
+		dc.SetColor(color.White)
+		dc.DrawCircle(float64(x), float64(x)/float64(p.Image().Bounds().Max.X)*float64(p.Image().Bounds().Max.Y), 10)
+		dc.Stroke()
+		dc.DrawCircle(float64(x), 48, 80)
+		dc.Stroke()
+		dc.DrawLine(0, 0, float64(p.Image().Bounds().Max.X), float64(p.Image().Bounds().Max.Y))
+		dc.Stroke()
+		p.UpdateImage(img)
+		p.Update()
+		<-time.After(time.Second)
+	}
+
+}
+
 func TestPortal(t *testing.T) {
 
-	p, err := NewMatrix("192.168.1.83:8080")
+	p, err := NewMatrix("192.168.1.53:8080", Right)
 	if err != nil {
 		panic(err)
 	}

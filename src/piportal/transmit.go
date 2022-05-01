@@ -1,4 +1,4 @@
-package tx
+package piportal
 
 import (
 	"context"
@@ -17,6 +17,7 @@ import (
 
 type Connection struct {
 	conn           net.Conn
+	mode           PortalMode
 	address        string
 	counter        *int64
 	packetLimitter *rate.Limiter
@@ -41,9 +42,24 @@ func (c *Connection) WriteFrame(image *image.RGBA) {
 	packet := make([]byte, maxX*3+1)
 
 	for y := 0; y < maxY; y++ {
+		imageY := y
+		if c.mode == Right {
+			if y < 32 {
+				imageY = 31 - y
+			} else if y >= 64 {
+				imageY = 64 + (95 - y)
+			}
+		}
+		if y >= 32 && y < 64 {
+			imageY = 32 + 63 - y
+		}
 		packet[0] = byte(y)
 		for x := 0; x < maxX; x++ {
-			r, g, b, _ := image.RGBAAt(x, y).RGBA()
+			imageX := x
+			if c.mode == Left && y >= 32 && y < 64 {
+				imageX = 63 - x
+			}
+			r, g, b, _ := image.RGBAAt(imageX, imageY).RGBA()
 			packet[x*3+1] = uint8(r)
 			packet[x*3+2] = uint8(g)
 			packet[x*3+3] = uint8(b)
@@ -82,10 +98,11 @@ func NewUDPClient(address string) (*Connection, error) {
 	return c, nil
 }
 
-func NewTCPClient(address string) (*Connection, error) {
+func NewTCPClient(address string, mode PortalMode) (*Connection, error) {
 
 	c := &Connection{
 		counter: new(int64),
+		mode:    mode,
 		address: address,
 		//packetLimitter: rate.NewLimiter(rate.Every(time.Nanosecond*100), 1),
 		updateLimitter: rate.NewLimiter(100, 1),
