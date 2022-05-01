@@ -10,7 +10,7 @@ import (
 )
 
 func TestProfile(t *testing.T) {
-	daisyDevice, err := daisy.InitDaisy()
+	daisyDevice, err := daisy.Init()
 	if err != nil {
 		panic(err)
 	}

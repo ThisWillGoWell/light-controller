@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	daisyDevice, err := daisy.InitDaisy()
+	daisyDevice, err := daisy.Init()
 	if err != nil {
 		panic(err)
 	}

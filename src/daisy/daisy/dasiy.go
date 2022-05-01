@@ -2,9 +2,11 @@ package daisy
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"math"
+	"time"
 
 	"github.com/thiswillgowell/light-controller/ratetracker"
 
@@ -23,19 +25,24 @@ type Daisy struct {
 	tracker    *ratetracker.Tracker
 }
 
-func Float32fromBytes(bytes []byte) float32 {
+func (d *Daisy) NextFFTValues() [][]float32 {
+	return <-d.FFTChannel
+}
+
+func float32fromBytes(bytes []byte) float32 {
 	bits := binary.LittleEndian.Uint32(bytes)
 	float := math.Float32frombits(bits)
 	return float
 }
 
-func InitDaisy() (*Daisy, error) {
+func Init() (*Daisy, error) {
 	options := serial.OpenOptions{
-		PortName:        port, // populated from file depending on OS
-		BaudRate:        115200,
-		DataBits:        8,
-		StopBits:        1,
-		MinimumReadSize: bufferSize,
+		PortName:              port, // populated from file depending on OS
+		BaudRate:              115200,
+		DataBits:              8,
+		StopBits:              1,
+		MinimumReadSize:       bufferSize,
+		InterCharacterTimeout: 100,
 	}
 
 	port, err := serial.Open(options)
@@ -57,6 +64,7 @@ func InitDaisy() (*Daisy, error) {
 	go func() {
 		run := true
 		for run {
+			<-time.After(time.Millisecond * 100)
 			d.tracker.Track()
 			//fmt.Println("write")
 			if _, err := d.port.Write([]byte{0x00}); err != nil {
@@ -74,8 +82,10 @@ func InitDaisy() (*Daisy, error) {
 				run = false
 				continue
 			}
+			fmt.Printf("%s\n", hex.EncodeToString(readBuffer))
+
 			for i := 0; i < NumFrequencies*2; i++ {
-				channels[i/NumFrequencies][i%NumFrequencies] = Float32fromBytes(readBuffer[i*4 : i*4+4])
+				channels[i/NumFrequencies][i%NumFrequencies] = float32fromBytes(readBuffer[i*4 : i*4+4])
 			}
 			// first check if we can close
 			select {

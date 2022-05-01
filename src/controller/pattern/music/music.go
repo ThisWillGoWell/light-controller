@@ -358,7 +358,7 @@ func (bc *BinController) SmartBin(params BinInput) []int {
 //	}
 //}
 
-func CenterHollowVUBarDouble(daisyDevice *daisy.Daisy, display display.Display, barWidth int) {
+func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 }, display display.Display, barWidth int) {
 	targetImage := display.Image()
 	numBars := targetImage.Bounds().Size().X / barWidth
 	colors := graphics.LinerGradient(colornames.Purple, colornames.Darkorange, numBars)
@@ -372,7 +372,11 @@ func CenterHollowVUBarDouble(daisyDevice *daisy.Daisy, display display.Display, 
 
 	gg.NewContext(targetImage.Bounds().Size().X, targetImage.Bounds().Size().Y)
 	dc := gg.NewContextForImage(targetImage)
-	for channel := range daisyDevice.FFTChannel {
+	for {
+		channel := daisyDevice.NextFFTValues()
+		if channel == nil {
+			break
+		}
 		dc.SetColor(color.Transparent)
 		dc.Clear()
 		leftBars := removeDeadZones(BinHeight(BinInput{
