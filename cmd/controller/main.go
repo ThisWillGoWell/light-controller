@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/thiswillgowell/light-controller/src/controller/pattern/music"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
 	"github.com/thiswillgowell/light-controller/src/display"
 	"github.com/thiswillgowell/light-controller/src/piportal"
@@ -21,7 +20,8 @@ func main() {
 		panic(err)
 	}
 
-	p := display.NewRotation(display.NewMultiDisplay(display.ArrangementVertical, display.NewRotation(p2, display.MirrorAcrossY), p1), display.CounterClockwise)
+	p := display.NewRotation(display.NewMultiDisplay(display.ArrangementVertical, display.NewRotation(p2, display.MirrorAcrossY), p1), display.Clockwise)
 	//p := display.NewMirrorDisplay(p1, p2)
-	music.CenterHollowVUBarDouble(daisyDevice, p, 2)
+	//music.CenterHollowVUBarDouble(daisyDevice, p, 2)
+
 }

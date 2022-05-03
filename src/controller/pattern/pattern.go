@@ -1,9 +1,13 @@
 package pattern
 
-import "github.com/thiswillgowell/light-controller/color_2"
+import (
+	"image"
+)
 
 type Pattern interface {
-	GetNextValue() [][]color_2.Color
+	ImageChannel() chan *image.Image
+	Start()
+	Stop()
 }
 
 type MusicPattern struct {

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/thiswillgowell/light-controller/color_2"
+	"github.com/thiswillgowell/light-controller/color"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
 	"github.com/thiswillgowell/light-controller/src/display"
 )
@@ -19,14 +19,14 @@ type Controller struct {
 //	}
 //}
 
-func DarkenDisplay(amount float64) func(int, int, color_2.Color) color_2.Color {
-	return func(_, _ int, c color_2.Color) color_2.Color {
+func DarkenDisplay(amount float64) func(int, int, color.Color) color.Color {
+	return func(_, _ int, c color.Color) color.Color {
 		var newV uint8
 		if c.V <= 10 {
 			newV = 0
 		} else {
 			newV = uint8(float64(newV) * amount)
 		}
-		return color_2.FromHsv(c.H, c.S, newV)
+		return color.FromHsv(c.H, c.S, newV)
 	}
 }

@@ -2,17 +2,14 @@ package daisy
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"fmt"
+	"github.com/thiswillgowell/light-controller/ratetracker"
 	"io"
 	"math"
-	"time"
-
-	"github.com/thiswillgowell/light-controller/ratetracker"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/jacobsa/go-serial/serial"
+	"github.com/tarm/serial"
 )
 
 const NumFrequencies = 88
@@ -36,16 +33,14 @@ func float32fromBytes(bytes []byte) float32 {
 }
 
 func Init() (*Daisy, error) {
-	options := serial.OpenOptions{
-		PortName:              port, // populated from file depending on OS
-		BaudRate:              115200,
-		DataBits:              8,
-		StopBits:              1,
-		MinimumReadSize:       bufferSize,
-		InterCharacterTimeout: 100,
+	options := &serial.Config{
+		Name:     port, // populated from file depending on OS
+		Baud:     115200,
+		Size:     8,
+		StopBits: 1,
 	}
 
-	port, err := serial.Open(options)
+	port, err := serial.OpenPort(options)
 	if err != nil {
 		return nil, fmt.Errorf("serial.Open: %v", err)
 	}
@@ -64,7 +59,7 @@ func Init() (*Daisy, error) {
 	go func() {
 		run := true
 		for run {
-			<-time.After(time.Millisecond * 100)
+			//<-time.After(time.Millisecond * 100)
 			d.tracker.Track()
 			//fmt.Println("write")
 			if _, err := d.port.Write([]byte{0x00}); err != nil {
@@ -82,7 +77,7 @@ func Init() (*Daisy, error) {
 				run = false
 				continue
 			}
-			fmt.Printf("%s\n", hex.EncodeToString(readBuffer))
+			//fmt.Printf("%s\n", hex.EncodeToString(readBuffer))
 
 			for i := 0; i < NumFrequencies*2; i++ {
 				channels[i/NumFrequencies][i%NumFrequencies] = float32fromBytes(readBuffer[i*4 : i*4+4])

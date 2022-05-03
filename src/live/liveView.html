@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="200" height="100" style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML canvas tag.</canvas>
+
+<script>
+
+    window.onload = function () {
+        const webSocket = new WebSocket(`ws://${window.location.host}/ws`);
+        webSocket.onopen = function (event) {
+            console.log("open")
+            console.log(event)
+        }
+        webSocket.onmessage = function (event) {
+            console.log("message")
+            console.log(event)
+        }
+        webSocket.onerror = function (event) {
+            console.log("error")
+            console.log(event)
+        }
+        webSocket.onclose = function (event) {
+            console.log("close")
+            console.log(event)
+
+        }
+    }
+
+  //  var c = document.getElementById("myCanvas");
+
+
+
+    //
+    // var ctx = c.getContext("2d");
+    //
+    // // Create gradient
+    // var grd = ctx.createRadialGradient(75,50,5,90,60,100);
+    // grd.addColorStop(0,"red");
+    // grd.addColorStop(1,"white");
+    //
+    // // Fill with gradient
+    // ctx.fillStyle = grd;
+    // ctx.fillRect(10,10,150,80);
+</script>
+
+</body>
+</html>
+

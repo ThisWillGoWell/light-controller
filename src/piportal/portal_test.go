@@ -62,16 +62,21 @@ func randomCubic(dc *gg.Context) {
 }
 
 func TestPortals(t *testing.T) {
-	p1, err := NewMatrix("192.168.1.53:8080", Right)
-	if err != nil {
-		panic(err)
-	}
-	p2, err := NewMatrix("192.168.1.83:8080", Left)
-	if err != nil {
-		panic(err)
-	}
+	//	p1, err := NewMatrix("192.168.1.84:8080", Right)
 
-	p := display.NewRotation(display.NewMultiDisplay(display.ArrangementVertical, display.NewRotation(p2, display.MirrorAcrossY), p1), display.MirrorAcrossY)
+	p := display.NewMirrorDisplay(BottomHalfDisplay)
+
+	//p1, err := NewMatrix("192.168.1.53:8080", Right)
+	//if err != nil {
+	//	panic(err)
+	//}
+	////	p2, err := NewMatrix("192.168.1.106:8080", Left)
+	//p2, err := NewMatrix("192.168.1.83:8080", Left)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//p := display.NewRotation(display.NewMultiDisplay(display.ArrangementVertical, display.NewRotation(p2, display.MirrorAcrossY), p1), display.MirrorAcrossY)
 
 	//p := display.NewMirrorDisplay(p1, display.NewRotation(p2, display.MirrorAcrossY))
 
@@ -95,8 +100,7 @@ func TestPortals(t *testing.T) {
 		dc.Stroke()
 		dc.DrawLine(0, 0, float64(p.Image().Bounds().Max.X), float64(p.Image().Bounds().Max.Y))
 		dc.Stroke()
-		p.UpdateImage(img)
-		p.Update()
+		display.DrawAndUpdate(p, dc.Image())
 		<-time.After(time.Second)
 	}
 

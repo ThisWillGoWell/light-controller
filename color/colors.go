@@ -1,4 +1,4 @@
-package color_2
+package color
 
 import (
 	"image/color"

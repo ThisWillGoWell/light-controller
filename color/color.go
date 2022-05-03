@@ -1,4 +1,4 @@
-package color_2
+package color
 
 import (
 	"math"
@@ -16,6 +16,14 @@ type Color struct {
 	G    uint8
 	B    uint8
 	VMod int // 10 vmod in one V
+}
+
+func (c Color) RGBA() (r, g, b, a uint32) {
+	if c.H != 0 || c.S != 0 || c.V != 0 {
+		r, g, b := HsvToRgb(c.H, c.S, c.V)
+		return uint32(r), uint32(g), uint32(b), 255
+	}
+	return uint32(c.R), uint32(c.G), uint32(c.B), 255
 }
 
 type Hsv struct {

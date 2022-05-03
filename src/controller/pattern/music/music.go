@@ -358,8 +358,8 @@ func (bc *BinController) SmartBin(params BinInput) []int {
 //	}
 //}
 
-func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 }, display display.Display, barWidth int) {
-	targetImage := display.Image()
+func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 }, d display.Display, barWidth int) {
+	targetImage := d.Image()
 	numBars := targetImage.Bounds().Size().X / barWidth
 	colors := graphics.LinerGradient(colornames.Purple, colornames.Darkorange, numBars)
 	lut := BuildIndexLUT(MappingInput{
@@ -438,7 +438,8 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 				}
 			}
 		}
-		display.UpdateImage(dc.Image())
+		display.DrawAndUpdate(d, dc.Image())
+		d.Update()
 	}
 }
 

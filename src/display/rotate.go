@@ -14,12 +14,19 @@ const (
 	CounterClockwise
 	OneEighty
 	MirrorAcrossY
+	MirrorAcrossX
 )
 
 type TransposeFunc func(int, int) (int, int)
 
 func noRotation(x, y int) (int, int) {
 	return x, y
+}
+
+func rotateClockwise(maxX int) TransposeFunc {
+	return func(x int, y int) (int, int) {
+		return y, maxX - x - 1
+	}
 }
 
 func rotateCounterClockwise(x, y int) (int, int) {
@@ -39,6 +46,12 @@ func mirrorAcrossY(maxY int) TransposeFunc {
 	}
 }
 
+func mirrorAcrossX(maxX int) TransposeFunc {
+	return func(x int, y int) (int, int) {
+		return maxX - 1 - x, y
+	}
+}
+
 type VirtualDisplayRotation struct {
 	X                 int
 	Y                 int
@@ -49,11 +62,6 @@ type VirtualDisplayRotation struct {
 
 func (v *VirtualDisplayRotation) Image() draw.Image {
 	return v
-}
-
-func (v *VirtualDisplayRotation) UpdateImage(src image.Image) {
-	draw.Draw(v, v.Bounds(), src, image.Point{}, draw.Src)
-	v.Update()
 }
 
 func (v *VirtualDisplayRotation) Update() {
@@ -91,7 +99,7 @@ func NewRotation(d Display, rotationType Rotation) *VirtualDisplayRotation {
 	case Clockwise:
 		dRotate.Y = d.Image().Bounds().Size().X
 		dRotate.X = d.Image().Bounds().Size().Y
-		dRotate.transposeFunc = rotateCounterClockwise
+		dRotate.transposeFunc = rotateClockwise(dRotate.X)
 	case OneEighty:
 		dRotate.X = d.Image().Bounds().Size().X
 		dRotate.Y = d.Image().Bounds().Size().Y
@@ -104,6 +112,10 @@ func NewRotation(d Display, rotationType Rotation) *VirtualDisplayRotation {
 		dRotate.Y = d.Image().Bounds().Size().Y
 		dRotate.X = d.Image().Bounds().Size().X
 		dRotate.transposeFunc = mirrorAcrossY(dRotate.Y)
+	case MirrorAcrossX:
+		dRotate.Y = d.Image().Bounds().Size().Y
+		dRotate.X = d.Image().Bounds().Size().X
+		dRotate.transposeFunc = mirrorAcrossX(dRotate.X)
 	}
 	dRotate.boundingBox = image.Rect(0, 0, dRotate.X, dRotate.Y)
 	return dRotate

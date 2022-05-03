@@ -72,11 +72,6 @@ func (m *MultiDisplay) Update() {
 	m.wg.Wait()
 }
 
-func (m *MultiDisplay) UpdateImage(newImage image.Image) {
-	draw.Draw(m, m.BoundingBox, newImage, image.Point{}, draw.Src)
-	m.Update()
-}
-
 func (m *MultiDisplay) Image() draw.Image {
 	return m
 }
