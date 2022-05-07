@@ -11,7 +11,6 @@ import (
 func ClockPattern(d display.Display) {
 	f := bitmapfont.Face
 	for {
-		d.Clear()
 		t := time.Now()
 		tStr := t.Format("3:04")
 		if t.Hour() > 12 {

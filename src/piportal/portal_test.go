@@ -2,6 +2,7 @@ package piportal
 
 import (
 	"github.com/thiswillgowell/light-controller/src/display"
+	"golang.org/x/image/colornames"
 	"image"
 	"image/color"
 	"math/rand"
@@ -62,16 +63,16 @@ func randomCubic(dc *gg.Context) {
 }
 
 func TestPortals(t *testing.T) {
-	//	p1, err := NewMatrix("192.168.1.84:8080", Right)
+	//	p1, err := NewMatrix("192.168.1.84:8080", TopLeft)
 
-	p := display.NewMirrorDisplay(BottomHalfDisplay)
+	p := display.NewMirrorDisplay(Fireplace)
 
-	//p1, err := NewMatrix("192.168.1.53:8080", Right)
+	//p1, err := NewMatrix("192.168.1.53:8080", TopLeft)
 	//if err != nil {
 	//	panic(err)
 	//}
-	////	p2, err := NewMatrix("192.168.1.106:8080", Left)
-	//p2, err := NewMatrix("192.168.1.83:8080", Left)
+	////	p2, err := NewMatrix("192.168.1.106:8080", TopRight)
+	//p2, err := NewMatrix("192.168.1.83:8080", TopRight)
 	//if err != nil {
 	//	panic(err)
 	//}
@@ -96,9 +97,13 @@ func TestPortals(t *testing.T) {
 		dc.SetColor(color.White)
 		dc.DrawCircle(float64(x), float64(x)/float64(p.Image().Bounds().Max.X)*float64(p.Image().Bounds().Max.Y), 10)
 		dc.Stroke()
-		dc.DrawCircle(float64(x), 48, 80)
+		dc.DrawCircle(float64(x), 0, 80)
 		dc.Stroke()
 		dc.DrawLine(0, 0, float64(p.Image().Bounds().Max.X), float64(p.Image().Bounds().Max.Y))
+		dc.Stroke()
+
+		dc.SetColor(colornames.Hotpink)
+		dc.DrawLine(0, 0, maxX, 1)
 		dc.Stroke()
 		display.DrawAndUpdate(p, dc.Image())
 		<-time.After(time.Second)
@@ -108,7 +113,7 @@ func TestPortals(t *testing.T) {
 
 func TestPortal(t *testing.T) {
 
-	p, err := NewMatrix("192.168.1.53:8080", Right)
+	p, err := NewMatrix("192.168.1.53:8080", TopLeft)
 	if err != nil {
 		panic(err)
 	}

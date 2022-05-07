@@ -22,8 +22,10 @@ func (m *Matrix) UpdateImage(src image.Image) {
 type PortalMode int
 
 const (
-	Right PortalMode = iota
-	Left
+	TopLeft PortalMode = iota
+	TopRight
+	BottomLeft
+	BottomRight
 )
 
 func NewMatrix(address string, mode PortalMode) (*Matrix, error) {

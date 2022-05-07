@@ -1,11 +1,30 @@
 <!DOCTYPE html>
 <html>
-<body>
+<body style="background-color:black;">
 
-<canvas id="myCanvas" width="200" height="100" style="border:1px solid #d3d3d3;">
+<canvas id="myCanvas" width="1000" height="700" style="border:1px solid #d3d3d3;">
     Your browser does not support the HTML canvas tag.</canvas>
 
 <script>
+    const c = document.getElementById("myCanvas");
+    const ctx = c.getContext("2d");
+    const pixelSize = 4
+    const spacing = 1
+    const blockSize = pixelSize + spacing
+    processMessage = function (message) {
+        for(let x=0; x < message.width; x++ ){
+            for (let y =0;y<message.height;y++){
+                const r = Number('0x' + message.payload.substring((x * message.width + y) * 6, (x * message.width + y) * 6 + 2));
+                const g = Number('0x' + message.payload.substring((x * message.width + y) * 6 +2, (x * message.width + y) * 6 + 4));
+                const b = Number('0x' + message.payload.substring((x * message.width + y) * 6 +4, (x * message.width + y) * 6 + 6));
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+
+                const xPos = x * (pixelSize + spacing);
+                const yPos = y * (pixelSize + spacing);
+                ctx.fillRect(yPos, 700-xPos, pixelSize, pixelSize);
+            }
+        }
+    }
 
     window.onload = function () {
         const webSocket = new WebSocket(`ws://${window.location.host}/ws`);
@@ -14,8 +33,8 @@
             console.log(event)
         }
         webSocket.onmessage = function (event) {
-            console.log("message")
-            console.log(event)
+            const message = JSON.parse(event.data)
+            processMessage(message)
         }
         webSocket.onerror = function (event) {
             console.log("error")
@@ -28,12 +47,12 @@
         }
     }
 
-  //  var c = document.getElementById("myCanvas");
+  //
 
 
 
     //
-    // var ctx = c.getContext("2d");
+    //
     //
     // // Create gradient
     // var grd = ctx.createRadialGradient(75,50,5,90,60,100);

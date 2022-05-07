@@ -43,20 +43,21 @@ func (c *Connection) WriteFrame(image *image.RGBA) {
 
 	for y := 0; y < maxY; y++ {
 		imageY := y
-		if c.mode == Right {
+		if c.mode == TopLeft {
 			if y < 32 {
 				imageY = 31 - y
 			} else if y >= 64 {
 				imageY = 64 + (95 - y)
 			}
 		}
-		if y >= 32 && y < 64 {
+		if (c.mode != BottomLeft) && y >= 32 && y < 64 {
 			imageY = 32 + 63 - y
 		}
+
 		packet[0] = byte(y)
 		for x := 0; x < maxX; x++ {
 			imageX := x
-			if c.mode == Left && y >= 32 && y < 64 {
+			if (c.mode == TopRight) && y >= 32 && y < 64 {
 				imageX = 63 - x
 			}
 			r, g, b, _ := image.RGBAAt(imageX, imageY).RGBA()

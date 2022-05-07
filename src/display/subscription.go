@@ -36,11 +36,11 @@ func (v *SubscriptionDisplay) Update() {
 	}()
 
 	v.lock.Lock()
-	for id, c := range v.subscribers {
+	for _, c := range v.subscribers {
 		select {
 		case c <- v.Image():
 		default:
-			logger.Warn("dropping frame for socket", "id", id)
+			//zap.S().Warnw("dropping frame for socket", "id", id)
 		}
 	}
 	v.lock.Unlock()
@@ -48,16 +48,20 @@ func (v *SubscriptionDisplay) Update() {
 	wg.Wait()
 }
 
-func (v *SubscriptionDisplay) RegisterSubscription(id string, imgChan chan image.Image) {
+func (v *SubscriptionDisplay) RegisterSubscription(id string) chan image.Image {
+	imgChan := make(chan image.Image)
 	v.lock.Lock()
 	v.subscribers[id] = imgChan
 	v.lock.Unlock()
+	return imgChan
 }
 
 func (v *SubscriptionDisplay) RemoveSubscription(id string) {
 	v.lock.Lock()
+	imageChan := v.subscribers[id]
 	delete(v.subscribers, id)
 	v.lock.Unlock()
+	close(imageChan)
 }
 
 func (v *SubscriptionDisplay) notify() {

@@ -18,7 +18,7 @@
       <target name="will@192.168.1.105:22" type="ssh/sftp" uuid="092b78f5-526f-4c82-ad92-60430e7f1ee7">
         <config>
           <option name="projectRootOnTarget" value="/home/will/light-controller" />
-          <option name="serverName" value="will@192.168.1.105:22 agent" />
+          <option name="serverName" value="will@192.168.1.107:22 agent" />
           <option name="useRsync" value="true" />
         </config>
         <ContributedStateBase type="GoLanguageRuntime">

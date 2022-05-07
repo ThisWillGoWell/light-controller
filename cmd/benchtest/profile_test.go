@@ -15,11 +15,11 @@ func TestProfile(t *testing.T) {
 		panic(err)
 	}
 
-	p1, err := piportal.NewMatrix("192.168.1.53:8080", piportal.Right)
+	p1, err := piportal.NewMatrix("192.168.1.53:8080", piportal.TopLeft)
 	if err != nil {
 		panic(err)
 	}
-	//p2, err := piportal.NewMatrix("192.168.1.83:8080", piportal.Left)
+	//p2, err := piportal.NewMatrix("192.168.1.83:8080", piportal.TopRight)
 	//if err != nil {
 	//	panic(err)
 	//}

@@ -365,12 +365,11 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 	lut := BuildIndexLUT(MappingInput{
 		InputSize:         daisy.NumFrequencies,
 		OutputSize:        numBars,
-		InputPercentages:  []float64{0.4, 0.3, 0.3},
-		OutputPercentages: []float64{0.5, 0.4, 0.1},
+		InputPercentages:  []float64{0.3, 0.65, 0.05},
+		OutputPercentages: []float64{0.2, 0.7, 0.1},
 		Reversed:          false,
 	})
 
-	gg.NewContext(targetImage.Bounds().Size().X, targetImage.Bounds().Size().Y)
 	dc := gg.NewContextForImage(targetImage)
 	for {
 		channel := daisyDevice.NextFFTValues()
@@ -442,6 +441,30 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 		d.Update()
 	}
 }
+
+//
+//func CircleVuMeter(d display.Display, daisyDevice interface{ NextFFTValues() [][]float32 }) {
+//
+//	dc := gg.NewContextForImage(d.Image())
+//	radius := 4
+//	for {
+//		channel := daisyDevice.NextFFTValues()
+//		if channel == nil {
+//			break
+//		}
+//
+//		leftBars := removeDeadZones(BinHeight(BinInput{
+//			Input:          channel[0],
+//			MaxInputValue:  200.0,
+//			MaxOutputValue: 100,
+//			BinningLut:     lut,
+//			NumOutputs:     numBars,
+//			Interpolate:    true,
+//		}))
+//
+//	}
+//
+//}
 
 //
 //func FallingVuMeter(daisyDevice *daisy.Daisy, display display.Display) {

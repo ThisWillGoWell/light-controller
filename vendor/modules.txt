@@ -1,3 +1,6 @@
+# github.com/aquilax/go-perlin v1.1.0
+## explicit
+github.com/aquilax/go-perlin
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/fogleman/gg v1.3.0

@@ -19,30 +19,33 @@ var (
 
 func init() {
 	var err error
-	topRightDisplay, err := NewMatrix("192.168.1.84:8080", Right)
+	topRightDisplay, err := NewMatrix("192.168.1.84:8080", TopLeft)
 	if err != nil {
 		panic(err)
 	}
-	TopRightDisplay = display.NewRotation(topRightDisplay, display.MirrorAcrossX)
+	TopRightDisplay = display.NewRotation(display.NewRotation(topRightDisplay, display.CounterClockwise), display.MirrorAcrossY)
 
-	TopLeftDisplay, err = NewMatrix("192.168.1.106:8080", Left)
+	topLeftDisplay, err := NewMatrix("192.168.1.106:8080", BottomLeft)
 	if err != nil {
 		panic(err)
 	}
+	TopLeftDisplay = display.NewRotation(display.NewRotation(topLeftDisplay, display.Clockwise), display.MirrorAcrossY)
 
-	BottomRightDisplay, err = NewMatrix("192.168.1.83:8080", Left)
+	bottomRightDisplay, err := NewMatrix("192.168.1.83:8080", TopRight)
+	BottomRightDisplay = display.NewRotation(bottomRightDisplay, display.CounterClockwise)
+
 	if err != nil {
 		panic(err)
 	}
-	//	p2, err := NewMatrix("192.168.1.106:8080", Left)
-	bottomLeftDisplay, err := NewMatrix("192.168.1.53:8080", Right)
+	//	p2, err := NewMatrix("192.168.1.106:8080", TopRight)
+	bottomLeftDisplay, err := NewMatrix("192.168.1.53:8080", TopLeft)
 	if err != nil {
 		panic(err)
 	}
-	BottomLeftDisplay = display.NewRotation(bottomLeftDisplay, display.MirrorAcrossY)
+	BottomLeftDisplay = display.NewRotation(bottomLeftDisplay, display.Clockwise)
 
-	BottomHalfDisplay = display.NewMultiDisplay(display.ArrangementVertical, BottomLeftDisplay, BottomRightDisplay)
-
+	BottomHalfDisplay = display.NewMultiDisplay(display.ArrangementHorizontal, BottomLeftDisplay, BottomRightDisplay)
+	TopHalfDisplay = display.NewMultiDisplay(display.ArrangementHorizontal, TopLeftDisplay, TopRightDisplay)
 	Fireplace = display.NewMultiDisplay(display.ArrangementVertical, BottomHalfDisplay, TopHalfDisplay)
 
 }

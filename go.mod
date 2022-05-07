@@ -3,6 +3,7 @@ module github.com/thiswillgowell/light-controller
 go 1.16
 
 require (
+	github.com/aquilax/go-perlin v1.1.0
 	github.com/fogleman/gg v1.3.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gorilla/websocket v1.5.0

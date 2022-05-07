@@ -2,6 +2,7 @@ package live
 
 import (
 	_ "embed"
+	"fmt"
 	"github.com/thiswillgowell/light-controller/src/display"
 	"go.uber.org/zap"
 	"log"
@@ -31,7 +32,8 @@ func RunServer(subDisplay *display.SubscriptionDisplay) {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(subDisplay, w, r)
 	})
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Println("running")
+	err := http.ListenAndServe(":8081", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
