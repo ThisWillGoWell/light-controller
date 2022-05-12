@@ -65,8 +65,8 @@ func randomCubic(dc *gg.Context) {
 func TestPortals(t *testing.T) {
 	//	p1, err := NewMatrix("192.168.1.84:8080", TopLeft)
 
-	p := display.NewMirrorDisplay(Fireplace)
-
+	//p := display.NewMirrorDisplay(Fireplace)
+	p := display.NewMirrorDisplay(TopLeftDisplay, TopRightDisplay, BottomLeftDisplay, BottomRightDisplay)
 	//p1, err := NewMatrix("192.168.1.53:8080", TopLeft)
 	//if err != nil {
 	//	panic(err)

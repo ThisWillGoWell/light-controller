@@ -33,7 +33,7 @@ func RunServer(subDisplay *display.SubscriptionDisplay) {
 		serveWs(subDisplay, w, r)
 	})
 	fmt.Println("running")
-	err := http.ListenAndServe(":8081", nil)
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

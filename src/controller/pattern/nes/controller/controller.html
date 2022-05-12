@@ -1,0 +1,423 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Coda+Caption:800);
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            transition: all 150ms linear;
+            -webkit-transition: all 150ms linear;
+            font-size: 6px;
+            user-select: none;
+        }
+
+        body {
+            background: #373737;
+            color: #d9403b;
+            font-family: "Coda Caption", sans-serif;
+        }
+
+        a, a:hover, a:focus {
+            color: #d9403b;
+        }
+
+        .controller {
+            position: relative;
+            background: #d2d2d0;
+            margin: 1rem auto;
+            width: 30rem;
+            height: 14rem;
+            border-radius: .25rem;
+        }
+
+        .pad-area {
+            position: absolute;
+            background: #2b3334;
+            left: 1rem;
+            bottom: 1rem;
+            width: 28rem;
+            height: 10rem;
+            border-radius: .25rem;
+        }
+
+        .dpad {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            width: 6rem;
+            height: 6rem;
+        }
+
+        .cross {
+            position: absolute;
+            background: #111113;
+            border-radius: .2rem;
+            z-index: 5;
+        }
+
+        .cross.vert {
+            left: 2rem;
+            width: 2rem;
+            height: 6rem;
+        }
+
+        .cross.hor {
+            top: 2rem;
+            width: 6rem;
+            height: 2rem;
+        }
+
+        .cross-border {
+            position: absolute;
+            background: #d3d2ce;
+            border-radius: .2rem;
+            z-index: 5;
+        }
+
+        .cross-border.vert {
+            top: -.25rem;
+            left: 1.75rem;
+            width: 2.5rem;
+            height: 6.5rem;
+        }
+
+        .cross-border.hor {
+            top: 1.75rem;
+            left: -.25rem;
+            width: 6.5rem;
+            height: 2.5rem;
+        }
+
+        .direction {
+            position: absolute;
+            background: none;
+            width: 2rem;
+            height: 2rem;
+            z-index: 10;
+        }
+
+        #Up {
+            left: 2rem;
+        }
+
+        #Down {
+            left: 2rem;
+            bottom: 0;
+        }
+
+        #Left {
+            top: 2rem;
+        }
+
+        #Right {
+            top: 2rem;
+            right: 0;
+        }
+
+        .center {
+            width: 8rem;
+            height: 100%;
+            margin: 0 9rem;
+        }
+
+        .gray-bar {
+            position: relative;
+            background: #9a9b96;
+            width: 100%;
+            height: 1.5rem;
+            border-radius: .25rem;
+            margin-bottom: .5rem;
+        }
+
+        .gray-bar.first {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .gray-bar.big {
+            background: #d3d2ce;
+            height: 2.55rem;
+        }
+
+        .gray-bar.last {
+            height: .925rem;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .gray-bar span {
+            margin-left: .65rem;
+            font-size: .75rem;
+        }
+
+        .skinny-button {
+            position: absolute;
+            background: #323735;
+            top: .75rem;
+            width: 3rem;
+            height: 1rem;
+            border-radius: 2rem;
+        }
+
+        .skinny-button.select {
+            left: .5rem;
+        }
+
+        .skinny-button.start {
+            right: .5rem;
+        }
+
+        .nintendo {
+            position: absolute;
+            right: 3.5rem;
+            top: 1.5rem;
+        }
+
+        .nintendo:after {
+            content: "®";
+            position: absolute;
+            font-size: .75rem;
+            top: -.25rem;
+            right: -.75rem;
+        }
+
+        .buttons {
+            position: absolute;
+            right: 1.5rem;
+            bottom: 1rem;
+            width: 8rem;
+            height: 3rem;
+        }
+
+        .button-pad {
+            position: relative;
+            float: right;
+            background: #d3d2ce;
+            margin-right: 1rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: .25rem;
+        }
+
+        .button {
+            background: #e4060b;
+            width: 2.5rem;
+            height: 2.5rem;
+            margin: .25rem auto;
+            border-radius: 50%;
+        }
+
+        .button-letter {
+            position: absolute;
+            font-size: .75rem;
+            right: 0;
+        }
+
+        .combo {
+            text-align: center;
+        }
+
+        @media screen and (min-width: 26rem) {
+            html {
+                font-size: 8px;
+            }
+        }
+
+        @media screen and (min-width: 34rem) {
+            html {
+                font-size: 10px;
+            }
+        }
+
+        @media screen and (min-width: 42rem) {
+            html {
+                font-size: 12px;
+            }
+        }
+
+        @media screen and (min-width: 48rem) {
+            html {
+                font-size: 14px;
+            }
+        }
+
+        @media screen and (min-width: 54rem) {
+            html {
+                font-size: 16px;
+            }
+        }
+    </style>
+    <script src="../../../../../../../Downloads/pen-export-bdYdBp/src/script.js"></script>
+</head>
+<body>
+<script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+<script>
+
+    // Global variables
+    var first = true;
+    var timer = setTimeout(ClearCombo, 1000);
+
+    // Button Presses
+    $("#A").mousedown(function(){
+        $("#A").css('background', '#b3070b');
+    });
+
+    $("#A").mouseup(function(){
+        $("#A").css('background', '#e4060b');
+        ButtonPress("A");
+    });
+
+    $("#B").mousedown(function(){
+        $("#B").css('background', '#b3070b');
+    });
+
+    $("#B").mouseup(function(){
+        $("#B").css('background', '#e4060b');
+        ButtonPress("B");
+    });
+
+    $("#Select").mousedown(function(){
+        $("#Select").css('background', '#101211');
+    });
+
+    $("#Select").mouseup(function(){
+        $("#Select").css('background', '#323735');
+        ButtonPress("Select");
+    });
+
+    $("#Start").mousedown(function(){
+        $("#Start").css('background', '#101211');
+    });
+
+    $("#Start").mouseup(function(){
+        $("#Start").css('background', '#323735');
+        ButtonPress("Start");
+    });
+
+    $("#Up").mousedown(function(){
+        $("#Up").css('background', '#323735');
+    });
+
+    $("#Up").mouseup(function(){
+        $("#Up").css('background', 'none');
+        ButtonPress("Up");
+    });
+
+    $("#Down").mousedown(function(){
+        $("#Down").css('background', '#323735');
+    });
+
+    $("#Down").mouseup(function(){
+        $("#Down").css('background', 'none');
+        ButtonPress("Down");
+    });
+
+    $("#Left").mousedown(function(){
+        $("#Left").css('background', '#323735');
+    });
+
+    $("#Left").mouseup(function(){
+        $("#Left").css('background', 'none');
+        ButtonPress("Left");
+    });
+
+    $("#Right").mousedown(function(){
+        $("#Right").css('background', '#323735');
+    });
+
+    $("#Right").mouseup(function(){
+        $("#Right").css('background', 'none');
+        ButtonPress("Right");
+    });
+
+    // Catch all mouseup
+    $('html').mouseup(function(){
+        $("#Up,#Down,#Left,#Right").css('background', 'none');
+        $("#A,#B").css('background', '#e4060b');
+        $("#Select,#Start").css('background', '#323735');
+    });
+
+    // Konami Cheat Code
+    function ButtonPress(button){
+        clearTimeout(timer);
+        if(first){
+            $('.combo').append(button);
+            first = false;
+        } else {
+            $('.combo').append(" + " + button);
+        }
+        if( $('.combo').text() == "Up + Up + Down + Down + Left + Right + Left + Right + B + A + Start") {
+            ClearCombo();
+            Cheat();
+        }
+        else {
+            timer = setTimeout(ClearCombo, 1000);
+        }
+    }
+
+    function ClearCombo() {
+        first = true;
+        $('.combo').text("");
+    }
+
+    function Cheat() {
+        $('.combo').html('<a href="https://tinyurl.com/2fcpre6" target="_blank"> You did it! Click here for your prize, Cheater!</a>');
+        window.open('https://tinyurl.com/2fcpre6', '_blank');
+        timer = setTimeout(ClearCombo, 5000);
+    }
+</script>
+<div class="wrapper">
+    <div class="controller">
+        <div class="pad-area">
+            <div class="dpad">
+                <div class='cross-border vert'></div>
+                <div class='cross-border hor'></div>
+
+                <div class="cross vert"></div>
+                <div class="cross hor"></div>
+
+                <div id="Up" class="direction"></div>
+                <div id="Down" class="direction"></div>
+                <div id="Left" class="direction"></div>
+                <div id="Right" class="direction"></div>
+            </div>
+
+            <div class="center">
+                <div class="gray-bar first"></div>
+                <div class="gray-bar"></div>
+                <div class="gray-bar">
+                    <span>SELECT</span>
+                    <span>START</span>
+                </div>
+                <div class="gray-bar big">
+                    <div id="Select" class="skinny-button select"></div>
+                    <div id="Start" class="skinny-button start"></div>
+                </div>
+                <div class="gray-bar last"></div>
+            </div>
+
+            <div class="nintendo">
+                Nintendo
+            </div>
+
+            <div class="buttons">
+                <div class="button-pad">
+                    <div id="A" class="button"></div>
+                    <div class="button-letter">A</div>
+                </div>
+
+                <div class="button-pad">
+                    <div id="B" class="button"></div>
+                    <div class="button-letter">B</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="combo"></div>
+</div>
+</body>

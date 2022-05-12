@@ -5,7 +5,8 @@ go 1.16
 require (
 	github.com/aquilax/go-perlin v1.1.0
 	github.com/fogleman/gg v1.3.0
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/fogleman/nes v0.0.0-20220220210610-088b5ce1723c
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hajimehoshi/bitmapfont/v2 v2.1.3
 	github.com/pkg/errors v0.9.1 // indirect

@@ -365,8 +365,8 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 	lut := BuildIndexLUT(MappingInput{
 		InputSize:         daisy.NumFrequencies,
 		OutputSize:        numBars,
-		InputPercentages:  []float64{0.3, 0.65, 0.05},
-		OutputPercentages: []float64{0.2, 0.7, 0.1},
+		InputPercentages:  []float64{0.4, 0.40, 0.2},
+		OutputPercentages: []float64{0.3, 0.65, 0.05},
 		Reversed:          false,
 	})
 
@@ -381,7 +381,7 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 		leftBars := removeDeadZones(BinHeight(BinInput{
 			Input:          channel[0],
 			MaxInputValue:  200.0,
-			MaxOutputValue: targetImage.Bounds().Size().Y / 2 * 5 / 6,
+			MaxOutputValue: targetImage.Bounds().Size().Y / 2 * 4 / 6,
 			BinningLut:     lut,
 			NumOutputs:     numBars,
 			Interpolate:    true,
@@ -412,7 +412,7 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 		rightBars := removeDeadZones(BinHeight(BinInput{
 			Input:          channel[1],
 			MaxInputValue:  200.0,
-			MaxOutputValue: targetImage.Bounds().Size().Y / 2 * 5 / 6,
+			MaxOutputValue: targetImage.Bounds().Size().Y / 2 * 4 / 6,
 			BinningLut:     lut,
 			NumOutputs:     numBars,
 			Interpolate:    true,
@@ -443,28 +443,91 @@ func CenterHollowVUBarDouble(daisyDevice interface{ NextFFTValues() [][]float32 
 }
 
 //
-//func CircleVuMeter(d display.Display, daisyDevice interface{ NextFFTValues() [][]float32 }) {
-//
-//	dc := gg.NewContextForImage(d.Image())
-//	radius := 4
-//	for {
-//		channel := daisyDevice.NextFFTValues()
-//		if channel == nil {
-//			break
-//		}
-//
-//		leftBars := removeDeadZones(BinHeight(BinInput{
-//			Input:          channel[0],
-//			MaxInputValue:  200.0,
-//			MaxOutputValue: 100,
-//			BinningLut:     lut,
-//			NumOutputs:     numBars,
-//			Interpolate:    true,
-//		}))
-//
-//	}
-//
-//}
+func radialPosition(pos gg.Point, degrees float64, radius float64) gg.Point {
+	return gg.Point{
+		X: pos.X + math.Cos(gg.Radians(degrees))*radius,
+		Y: pos.Y + math.Sin(gg.Radians(degrees))*radius,
+	}
+}
+
+func CircleVuMeter(d display.Display, inputSize int, musicValues chan [][]float32) {
+
+	dc := gg.NewContextForImage(d.Image())
+	insideRadius := 20.0
+	maxRadius := 50.0
+	numBarsPerChannel := 45
+	maxBarHeight := maxRadius - insideRadius
+	barColors := graphics.LinerGradient(colornames.Purple, colornames.Darkorange, numBarsPerChannel)
+	degreesPerBar := 2
+
+	leftlut := BuildIndexLUT(MappingInput{
+		InputSize:         inputSize,
+		OutputSize:        numBarsPerChannel,
+		InputPercentages:  []float64{0.45, 0.45, 0.1},
+		OutputPercentages: []float64{0.45, 0.45, 0.1},
+		Reversed:          false,
+	})
+
+	rightLut := BuildIndexLUT(MappingInput{
+		InputSize:         inputSize,
+		OutputSize:        numBarsPerChannel,
+		InputPercentages:  []float64{0.45, 0.45, 0.1},
+		OutputPercentages: []float64{0.45, 0.45, 0.1},
+		Reversed:          true,
+	})
+
+	middle := gg.Point{
+		X: float64(dc.Width() / 2.0),
+		Y: float64(dc.Height() / 2.0),
+	}
+
+	drawLine := func(degrees float64, barSize float64, c color.Color) {
+		if barSize == 0 {
+			return
+		}
+		endPos := radialPosition(middle, degrees, insideRadius+barSize)
+		startPosition := radialPosition(middle, degrees, insideRadius)
+
+		pattern := gg.NewRadialGradient(middle.X, middle.Y, insideRadius, middle.X, middle.Y, barSize)
+		pattern.AddColorStop(0, color.Transparent)
+		pattern.AddColorStop(1, c)
+		dc.SetStrokeStyle(pattern)
+		dc.DrawLine(startPosition.X, startPosition.Y, endPos.X, endPos.Y)
+		dc.Stroke()
+	}
+
+	for channel := range musicValues {
+		leftBars := BinHeight(BinInput{
+			Input:          channel[0],
+			MaxInputValue:  200.0,
+			MaxOutputValue: int(maxBarHeight),
+			BinningLut:     leftlut,
+			NumOutputs:     numBarsPerChannel,
+			Interpolate:    true,
+		})
+
+		rightBars := BinHeight(BinInput{
+			Input:          channel[1],
+			MaxInputValue:  200.0,
+			MaxOutputValue: int(maxBarHeight),
+			BinningLut:     rightLut,
+			NumOutputs:     numBarsPerChannel,
+			Interpolate:    true,
+		})
+		dc.Clear()
+		for i := 0; i < numBarsPerChannel; i++ {
+			leftC := barColors[i]
+			rightC := barColors[numBarsPerChannel-1-i]
+			baseDegrees := float64(i * degreesPerBar)
+			drawLine(baseDegrees, float64(leftBars[i]), leftC)
+			drawLine(baseDegrees+90, float64(rightBars[i]), rightC)
+			drawLine(baseDegrees+180, float64(leftBars[i]), leftC)
+			drawLine(baseDegrees+270, float64(rightBars[i]), rightC)
+		}
+		display.DrawAndUpdate(d, dc.Image())
+	}
+
+}
 
 //
 //func FallingVuMeter(daisyDevice *daisy.Daisy, display display.Display) {
