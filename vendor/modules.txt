@@ -13,6 +13,9 @@ github.com/fogleman/nes/nes
 ## explicit
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
+# github.com/gordonklaus/portaudio v0.0.0-20180817120803-00e7307ccd93
+## explicit
+github.com/gordonklaus/portaudio
 # github.com/gorilla/websocket v1.5.0
 ## explicit
 github.com/gorilla/websocket
@@ -20,6 +23,10 @@ github.com/gorilla/websocket
 ## explicit
 github.com/hajimehoshi/bitmapfont/v2
 github.com/hajimehoshi/bitmapfont/v2/internal/bitmap
+# github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
+## explicit
+github.com/mjibson/go-dsp/dsputils
+github.com/mjibson/go-dsp/fft
 # github.com/pkg/errors v0.9.1
 ## explicit
 # github.com/pmezard/go-difflib v1.0.0

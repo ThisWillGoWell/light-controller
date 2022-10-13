@@ -13,7 +13,7 @@ import (
 )
 
 const NumFrequencies = 88
-const bufferSize = 2 * NumFrequencies * 4 //float32 * numFrequencies, left and right
+const bufferSize = 2 * NumFrequencies * 4 //2 * numFrequencies, left and right
 
 type Daisy struct {
 	port       io.ReadWriteCloser

@@ -9,8 +9,14 @@ import _ "embed"
 //go:embed "BellotaText-Regular.ttf"
 var ledSimpleStFile []byte
 
-func LedSimpleSt(points float64) font.Face {
-	f, err := truetype.Parse(ledSimpleStFile)
+//go:embed "MonospaceBold.ttf"
+var monospaceBold []byte
+
+//go:embed "Monospace.ttf"
+var monospace []byte
+
+func parse(ttf []byte, points float64) font.Face {
+	f, err := truetype.Parse(ttf)
 	if err != nil {
 		panic(err)
 	}
@@ -19,4 +25,16 @@ func LedSimpleSt(points float64) font.Face {
 		// Hinting: font.HintingFull,
 	})
 	return face
+}
+
+func LedSimpleSt(points float64) font.Face {
+	return parse(ledSimpleStFile, points)
+}
+
+func MonospaceBold(points float64) font.Face {
+	return parse(monospaceBold, points)
+}
+
+func Monospace(points float64) font.Face {
+	return parse(monospace, points)
 }

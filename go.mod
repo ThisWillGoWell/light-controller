@@ -7,8 +7,10 @@ require (
 	github.com/fogleman/gg v1.3.0
 	github.com/fogleman/nes v0.0.0-20220220210610-088b5ce1723c
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/gordonklaus/portaudio v0.0.0-20180817120803-00e7307ccd93
 	github.com/gorilla/websocket v1.5.0
 	github.com/hajimehoshi/bitmapfont/v2 v2.1.3
+	github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

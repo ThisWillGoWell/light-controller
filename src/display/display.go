@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/image/draw"
 	"image"
+	"strings"
 )
 
 type Display interface {
@@ -20,7 +21,7 @@ func DrawAndUpdate(dest Display, src image.Image) {
 func NewTestRGBA(x, y int, filename string) Display {
 	return &rgba{
 		img:      image.NewRGBA(image.Rect(0, 0, x, y)),
-		fileName: filename,
+		fileName: strings.TrimRight(filename, ".png") + ".png",
 	}
 }
 

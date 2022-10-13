@@ -14,7 +14,7 @@ import (
 )
 
 func TestText(t *testing.T) {
-	d := display.NewRotation(piportal.Fireplace, display.MirrorAcrossY)
+	d := piportal.Fireplace
 	subD := display.NewSubscription(d)
 	go live.RunServer(subD)
 	dc := gg.NewContextForImage(subD.Image())
@@ -27,9 +27,10 @@ func TestText(t *testing.T) {
 
 	scaleFactor := float64(in.Y) / float64(out.Y)
 	xAmount := int(float64(out.X) * scaleFactor)
+	ticker := time.NewTicker(time.Second / 75)
 	for x := 0; x < in.X-xAmount; x++ {
+		<-ticker.C
 		draw.CatmullRom.Scale(subD.Image(), subD.Image().Bounds(), marioWorld, image.Rect(x, 0, x+xAmount, in.Y), draw.Over, nil)
 		subD.Update()
-		<-time.After(time.Millisecond * 10)
 	}
 }

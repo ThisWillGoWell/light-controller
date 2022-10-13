@@ -11,17 +11,17 @@ import "github.com/fogleman/nes/nes"
 import "github.com/stretchr/testify/require"
 
 func TestNES(t *testing.T) {
-	console, err := nes.NewConsole("/Users/will/workspace/light-controller/src/controller/pattern/nes/Super Mario Bros (E).nes")
+	console, err := nes.NewConsole("/Users/will/workspace/light-controller/src/controller/pattern/nes/Donkey Kong (World) (Rev A).nes")
 	require.NoError(t, err)
 
 	sub := display.NewSubscription(piportal.Fireplace)
-	d := display.NewRotation(sub, display.MirrorAcrossY)
+
 	go live.RunServer(sub)
 
 	tick := time.NewTicker(time.Second / 60)
 	for {
 		<-tick.C
 		console.StepFrame()
-		drawFrame(d, console)
+		drawFrame(sub, console)
 	}
 }

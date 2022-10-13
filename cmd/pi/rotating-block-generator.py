@@ -130,7 +130,7 @@ class RotatingBlockGenerator(SampleBase):
             rotation += 1
             rotation %= 360
 
-            # calculate sin and cos once for each frame
+            # calculate sin and cos once for each flame
             angle = rotation * deg_to_rad
             sin = math.sin(angle)
             cos = math.cos(angle)
