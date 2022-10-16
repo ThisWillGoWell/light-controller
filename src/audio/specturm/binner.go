@@ -18,7 +18,7 @@ type BinInput struct {
 	Interpolate bool
 }
 
-func BinHeight(input []FrequencyValue, params BinInput) []int {
+func BinHeight(input []FrequencyValue, params BinInput, maxInputValue FrequencyValue) []int {
 	output := make([]int, params.NumOutputs)
 	outputPower := make([]float64, params.NumOutputs)
 	inputsCountPerOutput := make([]int, params.NumOutputs)

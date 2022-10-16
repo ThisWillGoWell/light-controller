@@ -1,5 +1,6 @@
 package controller
 
+/*
 import (
 	"github.com/thiswillgowell/light-controller/color"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
@@ -30,3 +31,4 @@ func DarkenDisplay(amount float64) func(int, int, color.Color) color.Color {
 		return color.FromHsv(c.H, c.S, newV)
 	}
 }
+*/

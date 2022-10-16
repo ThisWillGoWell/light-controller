@@ -23,9 +23,8 @@ type Props struct {
 type Manager struct {
 	ActiveDevice      Device
 	RegisteredDevices map[string]Device
-
 }
 
-func StartAudio(callback func([][]float64){
-
-}
+//func StartDevice(device Device, processFunctions) {
+//
+//}

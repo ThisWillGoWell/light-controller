@@ -9,18 +9,20 @@ import (
 
 var logger *zap.SugaredLogger
 
+// SubscriptionDisplay a display that when its updated, will propagate updates to
+// other displays
+type SubscriptionDisplay struct {
+	underlyingDisplay Display
+	subscribers       map[string]chan image.Image
+	lock              *sync.Mutex
+}
+
 func NewSubscription(wrappedDisplay Display) *SubscriptionDisplay {
 	return &SubscriptionDisplay{
 		underlyingDisplay: wrappedDisplay,
 		subscribers:       map[string]chan image.Image{},
 		lock:              &sync.Mutex{},
 	}
-}
-
-type SubscriptionDisplay struct {
-	underlyingDisplay Display
-	subscribers       map[string]chan image.Image
-	lock              *sync.Mutex
 }
 
 func (v *SubscriptionDisplay) Image() draw.Image {

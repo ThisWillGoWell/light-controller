@@ -1,7 +1,7 @@
 package main
 
+/*
 import (
-	"github.com/thiswillgowell/light-controller/src/controller/pattern/music"
 	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
 	"github.com/thiswillgowell/light-controller/src/display"
 	"github.com/thiswillgowell/light-controller/src/live"
@@ -16,6 +16,6 @@ func main() {
 	subscriptionDisplay := display.NewSubscription(piportal.Fireplace)
 	//subscriptionDisplay := display.NewSubscription(display.NewRGBA(32*12, 64*2))
 	go live.RunServer(subscriptionDisplay)
-	music.CenterHollowVUBarDouble(daisyDevice, subscriptionDisplay, 1)
+	//music.CenterHollowVUBarDouble(daisyDevice, subscriptionDisplay, 1)
 	//music.CircleVuMeter(subscriptionDisplay, daisy.NumFrequencies, daisyDevice.FFTChannel)
 }

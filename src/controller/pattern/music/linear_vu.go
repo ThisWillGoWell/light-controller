@@ -8,28 +8,52 @@ import (
 )
 
 type Params struct {
-	BarWidth    int
-	Display     display.Display
-	InputMapper []int
-	ColorGen    func(int, int) color.Color
-	Channel     specturm.Channel
+	BarWidth int
+	Display  display.Display
+	//InputMapper []int
+	// function that accepts int bar number, and bar height
+	// then returns the []color.Color with length
+	BarColors func(int, int) []color.Color
+	Channel   specturm.Channel
 }
 
-type CenterHollowVuMeter struct {
-	dc     gg.Context
+type VuMeter struct {
+	dc     *gg.Context
 	params Params
+
+	displayHeight int
+	displayWidth  int
+
+	numBars int
 }
 
-func NewCenterHollowVuMeter(d display.Display, params Params) {
-	targetImage := d.Image()
-	numBars := targetImage.Bounds().Size().X / params.BarWidth
+func NewVuMeter(params Params) *VuMeter {
+	return &VuMeter{
+		dc:            gg.NewContextForImage(params.Display.Image()),
+		params:        params,
+		displayHeight: params.Display.Image().Bounds().Size().Y,
+		displayWidth:  params.Display.Image().Bounds().Size().X,
+		numBars:       params.Display.Image().Bounds().Size().X / params.BarWidth,
+	}
 }
 
-func (c *CenterHollowVuMeter) ProcessSpectrum(spectrum specturm.FrequencySpectrum) error {
-	specturm.BinHeight()
-	c.dc.SetColor(color.Transparent)
-	c.dc.Clear()
+func (meter *VuMeter) ProcessSpectrum(s specturm.FrequencySpectrum) {
+	barValues := s.Bin(meter.params.Channel, specturm.BinInput{
+		MaxOutputValue: meter.displayHeight,
+		NumOutputs:     meter.displayWidth,
+		Interpolate:    true,
+	}, true)
 
-	c.params.Display.Update()
-
+	meter.dc.SetColor(color.Transparent)
+	meter.dc.Clear()
+	for col, barHeight := range barValues {
+		colors := meter.params.BarColors(col, barHeight)
+		for i, c := range colors {
+			meter.dc.SetColor(c)
+			for j := 0; j < meter.params.BarWidth; j++ {
+				meter.dc.SetPixel(col*meter.params.BarWidth+j, i)
+			}
+		}
+	}
+	display.DrawAndUpdate(meter.params.Display, meter.dc.Image())
 }

@@ -1,16 +1,16 @@
 package benchtest
 
-import (
+/*import (
+
 	"testing"
 	"time"
 
 	"github.com/thiswillgowell/light-controller/src/controller/pattern/music"
-	"github.com/thiswillgowell/light-controller/src/daisy/daisy"
 	"github.com/thiswillgowell/light-controller/src/piportal"
 )
 
 func TestProfile(t *testing.T) {
-	daisyDevice, err := daisy.Init()
+	//daisyDevice, err := daisy.Init()
 	if err != nil {
 		panic(err)
 	}
@@ -31,3 +31,4 @@ func TestProfile(t *testing.T) {
 	}()
 	<-time.After(time.Second * 3)
 }
+*/

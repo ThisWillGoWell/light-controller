@@ -6,10 +6,10 @@ type Format uint64
 
 type FrequencyValue float64
 
-//const (
-//	MonoFormat Format = iota
-//	StereoFormat
-//)
+const (
+	MonoFormat Format = iota
+	StereoFormat
+)
 
 type Channel uint64
 
@@ -30,6 +30,8 @@ type FrequencySpectrum struct {
 
 	Format Format
 	pool   *sync.Pool
+
+	MaxValue FrequencyValue
 }
 
 func (f FrequencySpectrum) Free() {
@@ -45,9 +47,10 @@ func NewSamplePool(bufferSize int) *sync.Pool {
 	}
 }
 
-func NewSpectrum(pool *sync.Pool) FrequencySpectrum {
+func NewSpectrum(pool *sync.Pool, maxValue FrequencyValue) FrequencySpectrum {
 	f := FrequencySpectrum{
-		pool: pool,
+		pool:     pool,
+		MaxValue: maxValue,
 	}
 
 	f.RightChannel = pool.Get().([]FrequencyValue)
@@ -64,5 +67,5 @@ func (f FrequencySpectrum) Bin(channel Channel, binningInput BinInput, removeDea
 	case LeftChannel:
 		input = f.LeftChannel
 	}
-	return BinHeight(input, binningInput)
+	return BinHeight(input, binningInput, f.MaxValue)
 }
