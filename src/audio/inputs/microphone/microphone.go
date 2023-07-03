@@ -29,6 +29,8 @@ const historicalValues = 16
 
 const windowingSize = 32
 
+const bufferSize = sampleSize * samplesPerFFT
+
 type microphone struct {
 	props   audio.Props
 	lock    *sync.Mutex
@@ -37,13 +39,20 @@ type microphone struct {
 
 	stream *portaudio.Stream
 
-	frequencyChannel chan specturm.FrequencySpectrum
+	FrequencyChannel chan specturm.FrequencySpectrum
 
 	resourcePool sync.Pool
 }
 
 func windowFunction(i int, input float64) float64 {
-	if i >= windowingSize && i < ()windowingSize
+	scalar := 1.0
+	if i < windowingSize {
+		scalar = float64(i) / float64(windowingSize)
+	}
+	if i+windowingSize >= bufferSize {
+		scalar = float64(i+windowingSize-bufferSize) / float64(windowingSize)
+	}
+	return input * scalar
 }
 
 func (d *microphone) Start() error {
@@ -60,26 +69,12 @@ func (d *microphone) Start() error {
 	framesPerBuffer := int(math.Pow(2, math.Ceil(math.Log(sampleRate/idealProcessingRate))))
 	resourcePool := specturm.NewSamplePool(framesPerBuffer)
 
-	// append values as they are read
-
-	// pass each completed buffer to a low pass filter
-
-	// window over each buffer as its completed
-
-	// pass values into fft
-
-	fftBuffers := make([][]float32, historicalValues)
-	for i := range fftBuffers {
-		fftBuffers[i] = make([]float32, sampleSize*samplesPerFFT)
-	}
-
-	inputBuffer := make([]float64, sampleSize*samplesPerFFT)
+	inputBuffer := make([]float64, bufferSize)
 
 	currentBufferIndex := 0
 
-	currentIndex := 0
+	windowedInput := make([]float64, len(inputBuffer))
 
-	processingBuffer := make([]float64, framesPerBuffer)
 	var err error
 	d.stream, err = portaudio.OpenDefaultStream(1, 0, sampleRate, framesPerBuffer, func(in []float32) {
 		frequencies := specturm.NewSpectrum(resourcePool, 1)
@@ -90,18 +85,23 @@ func (d *microphone) Start() error {
 			currentBufferIndex = (currentBufferIndex + 1) % len(inputBuffer)
 		}
 
-		// preform the FFT
-		fftOutput := fft.FFTReal(append(inputBuffer[currentBufferIndex:], inputBuffer[0:currentBufferIndex]...))
-
-		// copy the fft result to the result buffer and apply windowing function
-
-		fftOutput := fft.FFTReal(processingBuffer)
-		for i := range fftOutput {
-			frequencies.LeftChannel[i] = specturm.FrequencyValue(real(fftOutput[i]))
-			frequencies.RightChannel[i] = specturm.FrequencyValue(real(fftOutput[i]))
+		// reorder the input and apply a window
+		for inputIndex, value := range inputBuffer {
+			i := (inputIndex - currentBufferIndex) % bufferSize
+			windowedInput[i] = windowFunction(i, value)
 		}
 
-		d.frequencyChannel <- frequencies
+		// preform the FFT on the windowed input
+		fftOutput := fft.FFTReal(windowedInput)
+
+		// the first index is dc offset, and the second half of the array is mirrored
+		for i := 1; i < bufferSize/2; i++ {
+			frequencies.LeftChannel[i] = specturm.FrequencyValue(mag(fftOutput[i]))
+			frequencies.RightChannel[i] = specturm.FrequencyValue(mag(fftOutput[i]))
+		}
+
+		d.FrequencyChannel <- frequencies
+
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create stream: %w", err)
@@ -110,6 +110,10 @@ func (d *microphone) Start() error {
 		return err
 	}
 	return nil
+}
+
+func mag(c complex128) float64 {
+	return math.Sqrt(math.Pow(real(c), 2) + math.Pow(imag(c), 2))
 }
 
 func (d *microphone) Stop() {
