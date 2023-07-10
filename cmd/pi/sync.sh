@@ -7,6 +7,7 @@ script_directory=$(dirname "$(readlink -f "$0")")
 source_directory="$script_directory/portal"
 destination_directory="/home/pi"
 
+rm $script_directory/portal/portal
 # Check if the hosts.txt file exists
 hosts_file="$script_directory/hosts.txt"
 if [[ ! -f "$hosts_file" ]]; then
@@ -44,7 +45,7 @@ do
 
         # Start new portal binary as root
         echo "Starting new portal binary on $name ($host)"
-        ssh "pi@$host" "sudo $destination_directory/portal &"
+        ssh "pi@$host" "sudo $destination_directory/portal"
 
         echo "Deployment completed on $name ($host)"
         echo

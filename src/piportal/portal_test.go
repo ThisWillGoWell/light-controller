@@ -80,7 +80,7 @@ func drawTestImage(p *Matrix) {
 		grad.AddColorStop(1, color.RGBA{60, 0, 40, 255})
 
 		dc.SetFillStyle(grad)
-		dc.DrawRectangle(1, 1, maxX-2, maxY-2)
+		dc.DrawRectangle(0, 0, maxX, maxY)
 		dc.Fill()
 
 		dc.SetColor(color.White)
@@ -91,8 +91,17 @@ func drawTestImage(p *Matrix) {
 		dc.DrawLine(0, 0, float64(p.Image().Bounds().Max.X), float64(p.Image().Bounds().Max.Y))
 		dc.Stroke()
 
-		dc.SetColor(colornames.Hotpink)
-		dc.DrawLine(0, 0, maxX, 1)
+		dc.SetColor(colornames.Purple)
+		dc.DrawLine(0, 0, maxX-1, 0)
+		dc.Stroke()
+		dc.SetColor(colornames.Red)
+		dc.DrawLine(maxX-1, 0, maxX-1, maxY-1)
+		dc.Stroke()
+		dc.SetColor(colornames.Blue)
+		dc.DrawLine(maxX-1, maxY-1, 0, maxY-1)
+		dc.Stroke()
+		dc.SetColor(colornames.Gold)
+		dc.DrawLine(0, maxY-1, 0, 0)
 		dc.Stroke()
 		display.DrawAndUpdate(p, dc.Image())
 		<-time.After(time.Second)

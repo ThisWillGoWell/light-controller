@@ -79,8 +79,6 @@ func (m *mappedImage) At(x, y int) color.Color {
 
 type mappingTransform struct {
 	mappingFuncs []mappedRead
-	panelHeight  int
-	panelWidth   int
 	startX       int
 	startY       int
 	endY         int
@@ -94,40 +92,7 @@ func (t mappingTransform) transform(x, y int) (int, int) {
 	return x, y
 }
 
-func (t mappingTransform) translation(dx, dy int) mappingTransform {
-	t.mappingFuncs = append(t.mappingFuncs, func(x1, y1 int) (int, int) {
-		return x1 + dx, y1 + dy
-	})
-	return t
-}
-
-func (t mappingTransform) rotate180() mappingTransform {
-	t.mappingFuncs = append(t.mappingFuncs, func(x1, y1 int) (int, int) {
-		// zero the cords and rotate
-		x1 = t.endX - (x1 - t.startX)
-		y1 = t.endY - (y1 - t.startY)
-		return x1, y1
-	})
-	return t
-}
-
-func (t mappingTransform) flipY() mappingTransform {
-	t.mappingFuncs = append(t.mappingFuncs, func(x1, y1 int) (int, int) {
-		return x1, t.endY - (y1 - t.startY)
-	})
-	return t
-}
-
-func (t mappingTransform) rotateCCW() mappingTransform {
-	t.mappingFuncs = append(t.mappingFuncs, func(x1, y1 int) (int, int) {
-		return y1, x1
-	})
-	return t
-}
-
-func (t mappingTransform) rotateCW() mappingTransform {
-	t.mappingFuncs = append(t.mappingFuncs, func(x1, y1 int) (int, int) {
-		return y1, t.endX - x1 - 1
-	})
+func (t mappingTransform) define(read mappedRead) mappingTransform {
+	t.mappingFuncs = append(t.mappingFuncs, read)
 	return t
 }

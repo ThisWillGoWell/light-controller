@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"image"
+	"image/color"
+	"image/png"
 	"net"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -25,37 +28,78 @@ type Connection struct {
 	reconnect      func()
 }
 
-func (c *Connection) WriteFrame(image image.Image) {
+const (
+	chunkSize = 4096
+)
+
+func (c *Connection) WriteFrame(img image.Image) {
 
 	if err := c.updateLimitter.Wait(context.Background()); err != nil {
 		zap.S().Errorw("failed to wait on update limiter", zap.Error(err))
 		return
 	}
-	if c.conn == nil {
-		return
+
+	pixelData := getPixelData(img)
+	f, err := os.Create("test.png")
+	if err != nil {
+		panic(err)
 	}
-	atomic.AddInt64(c.counter, 1)
+	if err := png.Encode(f, img); err != nil {
+		panic(err)
+	}
+	//// Prepare the length of the pixel data
+	//dataLen := uint32(len(pixelData))
+	//var err error
+	//// Send the length of the pixel data
+	//err = binary.Write(c.conn, binary.BigEndian, dataLen)
+	//if err != nil {
+	//	zap.S().Errorw("client is disconnected")
+	//	return
+	//}
 
-	maxX := image.Bounds().Max.X
-	maxY := image.Bounds().Max.Y
+	// Send the pixel data in chunks
+	totalSent := 0
 
-	packet := make([]byte, maxX*3+1)
-
-	for y := 0; y < maxY; y++ {
-		packet[0] = byte(y)
-		for x := 0; x < maxX; x++ {
-			r, g, b, _ := image.At(x, y).RGBA()
-			packet[x*3+1] = uint8(r)
-			packet[x*3+2] = uint8(g)
-			packet[x*3+3] = uint8(b)
+	for totalSent < len(pixelData) {
+		end := totalSent + chunkSize
+		if end > len(pixelData) {
+			end = len(pixelData)
 		}
-		if _, err := c.conn.Write(packet); err != nil {
-			zap.S().Warnw("error when writing to display, starting the reconnect process...", zap.Error(err))
-			_ = c.conn.Close()
-			c.conn = nil
-			go c.reconnect()
+		chunk := pixelData[totalSent:end]
+
+		n, err := c.conn.Write(chunk)
+		if err != nil {
+			zap.S().Errorw("Connection closed. Waiting for a new connection...")
+			return
+		}
+
+		totalSent += n
+	}
+
+	if totalSent == len(pixelData) {
+		fmt.Println("Image sent successfully!")
+	}
+
+}
+
+func getPixelData(img image.Image) []byte {
+	width := img.Bounds().Dx()
+	height := img.Bounds().Dy()
+
+	pixelData := make([]byte, width*height*3)
+
+	index := 0
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			c := color.RGBAModel.Convert(img.At(x, y)).(color.RGBA)
+			pixelData[index] = c.R
+			pixelData[index+1] = c.G
+			pixelData[index+2] = c.B
+			index += 3
 		}
 	}
+
+	return pixelData
 }
 
 func NewUDPClient(address string) (*Connection, error) {

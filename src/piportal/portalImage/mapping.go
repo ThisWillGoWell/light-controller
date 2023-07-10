@@ -33,30 +33,44 @@ func twoByThreeVerticalMappedPanel() *Image {
 
 	mappedImage := NewMappedImage(panelRows*2, panelColumns*3, panelColumns*2, panelRows*3)
 
-	// chain 1 and 2
+	// chain 1
 	mappedImage.RegisterMapTransform(mappingTransform{
 		startX: 0,
 		startY: 0,
-		endY:   panelRows*2 - 1,
 		endX:   panelColumns*2 - 1,
-	}.rotateCCW().flipY())
+		endY:   panelRows - 1,
+	}.define(func(x1, y1 int) (int, int) {
+		return panelRows - y1 - 1, x1
+	}))
+
+	// chain 2
+	mappedImage.RegisterMapTransform(mappingTransform{
+		startX: 0,
+		startY: panelRows,
+		endX:   panelColumns*2 - 1,
+		endY:   panelRows*2 - 1,
+	}.define(func(x1, y1 int) (int, int) {
+		return 3*panelRows - y1 - 2, x1
+	}))
 
 	// chain 3a
-	// rotate 180 degrees
-	// move left, down one panel
+	mappedImage.RegisterMapTransform(mappingTransform{
+		startX: panelColumns,
+		startY: panelRows * 2,
+		endX:   panelColumns*2 - 1,
+		endY:   panelRows*3 - 1,
+	}.define(func(x1, y1 int) (int, int) {
+		return y1 - panelRows - 1, 4*panelColumns - x1 - 2
+	}))
+
+	// 3b
 	mappedImage.RegisterMapTransform(mappingTransform{
 		startX: 0,
 		startY: panelRows * 2,
-		endX:   panelColumns,
+		endX:   panelColumns - 1,
 		endY:   panelRows*3 - 1,
-	}.rotateCW().translation(panelColumns, 0))
-
-	mappedImage.RegisterMapTransform(mappingTransform{
-		startX: panelColumns,
-		endX:   panelColumns*2 - 1,
-		startY: panelRows * 2,
-		endY:   panelRows*3 - 1,
-	}.rotateCCW().translation(-1*panelColumns, 0))
-
+	}.define(func(x1, y1 int) (int, int) {
+		return 3*panelRows - y1 - 1, 2*panelColumns + x1 - 1
+	}))
 	return mappedImage
 }
