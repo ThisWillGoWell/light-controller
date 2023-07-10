@@ -7,34 +7,34 @@ import (
 	"sync"
 )
 
-type MirrorDisplay struct {
+type DuplicateDisplay struct {
 	displays []Display
 }
 
-func (m *MirrorDisplay) ColorModel() color.Model {
+func (m *DuplicateDisplay) ColorModel() color.Model {
 	return m.displays[0].Image().ColorModel()
 }
 
-func (m *MirrorDisplay) Bounds() image.Rectangle {
+func (m *DuplicateDisplay) Bounds() image.Rectangle {
 	return m.displays[0].Image().Bounds()
 
 }
 
-func (m *MirrorDisplay) At(x, y int) color.Color {
+func (m *DuplicateDisplay) At(x, y int) color.Color {
 	return m.displays[0].Image().At(x, y)
 }
 
-func (m *MirrorDisplay) Set(x, y int, c color.Color) {
+func (m *DuplicateDisplay) Set(x, y int, c color.Color) {
 	for _, d := range m.displays {
 		d.Image().Set(x, y, c)
 	}
 }
 
-func (m *MirrorDisplay) Image() draw.Image {
+func (m *DuplicateDisplay) Image() draw.Image {
 	return m
 }
 
-func (m MirrorDisplay) UpdateImage(img image.Image) {
+func (m DuplicateDisplay) UpdateImage(img image.Image) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(m.displays))
 	for _, d := range m.displays {
@@ -47,7 +47,7 @@ func (m MirrorDisplay) UpdateImage(img image.Image) {
 	wg.Wait()
 }
 
-func (m *MirrorDisplay) Update() {
+func (m *DuplicateDisplay) Update() {
 	wg := sync.WaitGroup{}
 	wg.Add(len(m.displays))
 	for _, d := range m.displays {
@@ -60,8 +60,8 @@ func (m *MirrorDisplay) Update() {
 	wg.Wait()
 }
 
-func NewMirrorDisplay(displays ...Display) *MirrorDisplay {
-	return &MirrorDisplay{
+func NewDuplicateDisplay(displays ...Display) *DuplicateDisplay {
+	return &DuplicateDisplay{
 		displays: displays,
 	}
 }

@@ -22,10 +22,11 @@ type MultiDisplay struct {
 	DisplayLookup []int
 	// list of displays
 	Displays []Display
-	// given a index of dispaly, return where along the arrangemnt it lies
+	// given a index of display, return where along the arrangement it lies
 	StartLocations []int
 	wg             *sync.WaitGroup
 	BoundingBox    image.Rectangle
+	updateList     sync.Map
 }
 
 func (m *MultiDisplay) ColorModel() color.Model {
@@ -59,15 +60,19 @@ func (m *MultiDisplay) Set(x, y int, c color.Color) {
 		displayIndex = m.DisplayLookup[x]
 		m.Displays[displayIndex].Image().Set(x-m.StartLocations[displayIndex], y, c)
 	}
+	m.updateList.Store(displayIndex, true)
 }
 
 func (m *MultiDisplay) Update() {
-	m.wg.Add(len(m.Displays))
 	for i, d := range m.Displays {
-		go func(i int, d Display) {
-			d.Update()
-			m.wg.Done()
-		}(i, d)
+		_, updated := m.updateList.LoadAndDelete(i)
+		if updated {
+			m.wg.Add(1)
+			go func(i int, d Display) {
+				d.Update()
+				m.wg.Done()
+			}(i, d)
+		}
 	}
 	m.wg.Wait()
 }

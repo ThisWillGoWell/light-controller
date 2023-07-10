@@ -1,4 +1,4 @@
-package piportal
+package portals
 
 import "github.com/thiswillgowell/light-controller/src/display"
 

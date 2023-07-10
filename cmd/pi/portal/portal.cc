@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   RGBMatrix::Options defaults;
   rgb_matrix::RuntimeOptions runtime_opt;
 
-  runtime_opt.gpio_slowdown = 5;
+  //runtime_opt.gpio_slowdown = 5;
   defaults.rows = 32;
   defaults.cols = 128;
   defaults.chain_length = 2;

@@ -17,7 +17,6 @@ import (
 
 type Connection struct {
 	conn           net.Conn
-	mode           PortalMode
 	address        string
 	counter        *int64
 	packetLimitter *rate.Limiter
@@ -26,7 +25,8 @@ type Connection struct {
 	reconnect      func()
 }
 
-func (c *Connection) WriteFrame(image *image.RGBA) {
+func (c *Connection) WriteFrame(image image.Image) {
+
 	if err := c.updateLimitter.Wait(context.Background()); err != nil {
 		zap.S().Errorw("failed to wait on update limiter", zap.Error(err))
 		return
@@ -36,31 +36,15 @@ func (c *Connection) WriteFrame(image *image.RGBA) {
 	}
 	atomic.AddInt64(c.counter, 1)
 
-	maxX := image.Rect.Max.X
-	maxY := image.Rect.Max.Y
+	maxX := image.Bounds().Max.X
+	maxY := image.Bounds().Max.Y
 
 	packet := make([]byte, maxX*3+1)
 
 	for y := 0; y < maxY; y++ {
-		imageY := y
-		if c.mode == TopLeft {
-			if y < 32 {
-				imageY = 31 - y
-			} else if y >= 64 {
-				imageY = 64 + (95 - y)
-			}
-		}
-		if (c.mode != BottomLeft) && y >= 32 && y < 64 {
-			imageY = 32 + 63 - y
-		}
-
 		packet[0] = byte(y)
 		for x := 0; x < maxX; x++ {
-			imageX := x
-			if (c.mode == TopRight) && y >= 32 && y < 64 {
-				imageX = 63 - x
-			}
-			r, g, b, _ := image.RGBAAt(imageX, imageY).RGBA()
+			r, g, b, _ := image.At(x, y).RGBA()
 			packet[x*3+1] = uint8(r)
 			packet[x*3+2] = uint8(g)
 			packet[x*3+3] = uint8(b)
@@ -99,11 +83,10 @@ func NewUDPClient(address string) (*Connection, error) {
 	return c, nil
 }
 
-func NewTCPClient(address string, mode PortalMode) (*Connection, error) {
+func NewTCPClient(address string) (*Connection, error) {
 
 	c := &Connection{
 		counter: new(int64),
-		mode:    mode,
 		address: address,
 		//packetLimitter: rate.NewLimiter(rate.Every(time.Nanosecond*100), 1),
 		updateLimitter: rate.NewLimiter(100, 1),
@@ -112,7 +95,6 @@ func NewTCPClient(address string, mode PortalMode) (*Connection, error) {
 	var err error
 	if c.conn, err = net.Dial("tcp", address); err != nil {
 		zap.S().Warnw("could not connect to client, starting reconnect", zap.Error(err))
-
 	}
 
 	go func() {

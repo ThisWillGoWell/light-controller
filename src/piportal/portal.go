@@ -1,12 +1,13 @@
 package piportal
 
 import (
+	"github.com/thiswillgowell/light-controller/src/piportal/portalImage"
 	"image"
 	"image/draw"
 )
 
 type Matrix struct {
-	image *image.RGBA
+	image *portalImage.Image
 	Conn  *Connection
 }
 
@@ -19,20 +20,11 @@ func (m *Matrix) UpdateImage(src image.Image) {
 	m.Update()
 }
 
-type PortalMode int
-
-const (
-	TopLeft PortalMode = iota
-	TopRight
-	BottomLeft
-	BottomRight
-)
-
-func NewMatrix(address string, mode PortalMode) (*Matrix, error) {
+func NewMatrix(address string, layout portalImage.PortalLayout) (*Matrix, error) {
 	m := &Matrix{
-		image: image.NewRGBA(image.Rect(0, 0, 64, 96)),
+		image: portalImage.CreateMappedImage(layout),
 	}
-	conn, err := NewTCPClient(address, mode)
+	conn, err := NewTCPClient(address)
 
 	if err != nil {
 		return nil, err
@@ -42,5 +34,5 @@ func NewMatrix(address string, mode PortalMode) (*Matrix, error) {
 }
 
 func (m *Matrix) Update() {
-	m.Conn.WriteFrame(m.image)
+	m.Conn.WriteFrame(m.image.MappedImage())
 }
