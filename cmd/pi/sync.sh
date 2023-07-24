@@ -29,24 +29,25 @@ do
             rsync -avz "$source_directory/" "pi@$host:$destination_directory/"
 
             echo "Building binary on $name ($host)"
-            ssh "pi@$host" "cd $destination_directory && make portal"
+            ssh -n "pi@$host" "cd $destination_directory && make portal"
 
             echo "Syncing binary back to your machine"
             scp "pi@$host:$destination_directory/portal" "$script_directory/portal/"
         fi
+        #Stop existing portal process
+        echo "Stopping existing portal process on $name ($host)"
+        ssh -n "pi@$host" "sudo pkill portal"
 
         # Sync binary to other hosts
         echo "Syncing binary to $name ($host)"
         scp "$script_directory/portal/portal" "pi@$host:$destination_directory/"
 
-        # Stop existing portal process
-        echo "Stopping existing portal process on $name ($host)"
-        ssh "pi@$host" "sudo pkill portal"
-
         # Start new portal binary as root
         echo "Starting new portal binary on $name ($host)"
-        ssh "pi@$host" "sudo $destination_directory/portal"
-
+        ssh "pi@$host" << EOF > /dev/null 2>&1
+    sudo nohup $destination_directory/portal > /dev/null 2>&1 &
+    exit
+EOF
         echo "Deployment completed on $name ($host)"
         echo
     else
@@ -54,3 +55,5 @@ do
         echo
     fi
 done < "$hosts_file"
+
+rm -f "$script_directory/portal/portal"

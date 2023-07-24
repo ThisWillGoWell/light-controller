@@ -21,7 +21,6 @@ const int DATA_SIZE = NUMBER_COLUMNS * NUMBER_ROWS * 3;
 
 void saveImage(const char* data, int dataSize)
 {
-    std::cout << "Processing Image" << std::endl;
 
     int pixelCounter = 0;
     // Copy all the pixels to the canvas.
@@ -32,15 +31,21 @@ void saveImage(const char* data, int dataSize)
         }
     }
     offscreen = matrix->SwapOnVSync(offscreen);
-    std::cout << "Image received and saved successfully!" << std::endl;
 }
 
+
+void waiting_for_connection()
+{
+    offscreen->Fill(0, 0, 0);
+    offscreen->SetPixel(0,NUMBER_ROWS-1, 50, 0, 0);
+    offscreen = matrix->SwapOnVSync(offscreen);
+}
 
 
 void configureMatrix() {
     RGBMatrix::Options defaults;
     rgb_matrix::RuntimeOptions runtime_opt;
-    runtime_opt.gpio_slowdown = 5;
+    runtime_opt.gpio_slowdown = 4;
     defaults.rows = 32;
     defaults.cols = 64;
     defaults.chain_length = 2;
@@ -85,6 +90,7 @@ int main()
 
     while (true)
     {
+        waiting_for_connection();
         sockaddr_in clientAddress{};
         socklen_t clientAddressSize = sizeof(clientAddress);
 
@@ -113,7 +119,6 @@ int main()
             if (totalBytesReceived == DATA_SIZE) {
                 saveImage(imageData, DATA_SIZE);
             }
-            std::cout << "Waiting for a new image..." << std::endl;
         }
 
     }
