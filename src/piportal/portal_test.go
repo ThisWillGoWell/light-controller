@@ -69,6 +69,8 @@ func TestTestRig(t *testing.T) {
 	drawTestImage(p)
 }
 
+func TestBothVerticals(t *testing.T) {}
+
 func drawTestImage(p *Matrix) {
 	img := image.NewRGBA(p.Image().Bounds())
 	dc := gg.NewContextForRGBA(img)

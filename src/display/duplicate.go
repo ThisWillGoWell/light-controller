@@ -61,6 +61,13 @@ func (m *DuplicateDisplay) Update() {
 }
 
 func NewDuplicateDisplay(displays ...Display) *DuplicateDisplay {
+	displays[0].Image()
+	if len(displays) >= 2 {
+		for _, d := range displays[1:] {
+			DrawAndUpdate(d, displays[0].Image())
+		}
+	}
+
 	return &DuplicateDisplay{
 		displays: displays,
 	}

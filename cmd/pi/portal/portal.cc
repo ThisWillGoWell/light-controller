@@ -104,13 +104,15 @@ int main()
         std::cout << "Client connected. Receiving images..." << std::endl;
         char imageData[DATA_SIZE];
         int totalBytesReceived = 0;
-        while (true) {
+        bool connected = true;
+        while (connected) {
             totalBytesReceived = 0;
             while (totalBytesReceived < DATA_SIZE)
             {
                 int bytesReceived = recv(clientSocket, imageData + totalBytesReceived, DATA_SIZE - totalBytesReceived, 0);
                 if (bytesReceived <= 0) {
                     std::cerr << "Failed to receive image data" << std::endl;
+                    connected = false;
                     break;
                 }
                 totalBytesReceived += bytesReceived;

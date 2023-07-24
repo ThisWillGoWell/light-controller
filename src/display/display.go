@@ -18,22 +18,28 @@ func DrawAndUpdate(dest Display, src image.Image) {
 	dest.Update()
 }
 
-func NewTestRGBA(x, y int, filename string) Display {
+func NewTestRGBA(x, y int, filename string) *rgba {
+	saveToFile := true
+	if filename == "" {
+		saveToFile = false
+	}
 	return &rgba{
-		img:      image.NewRGBA(image.Rect(0, 0, x, y)),
-		fileName: strings.TrimRight(filename, ".png") + ".png",
+		img:        image.NewRGBA(image.Rect(0, 0, x, y)),
+		fileName:   strings.TrimRight(filename, ".png") + ".png",
+		saveToFile: saveToFile,
 	}
 }
 
-func NewRGBA(x, y int) Display {
+func NewRGBA(x, y int) *rgba {
 	return &rgba{
 		img: image.NewRGBA(image.Rect(0, 0, x, y)),
 	}
 }
 
 type rgba struct {
-	img      *image.RGBA
-	fileName string
+	img        *image.RGBA
+	fileName   string
+	saveToFile bool
 }
 
 func (R *rgba) Image() draw.Image {
@@ -41,9 +47,13 @@ func (R *rgba) Image() draw.Image {
 }
 
 func (R *rgba) Update() {
-	if R.fileName != "" {
+	if R.saveToFile {
 		if err := gg.NewContextForImage(R.img).SavePNG(R.fileName); err != nil {
 			zap.L().Error("failed to update", zap.Error(err))
 		}
 	}
+}
+
+func (R *rgba) DrawContext() *gg.Context {
+	return gg.NewContextForImage(R.img)
 }

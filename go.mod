@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/aquilax/go-perlin v1.1.0
+	github.com/briandowns/openweathermap v0.19.0
 	github.com/fogleman/gg v1.3.0
 	github.com/fogleman/nes v0.0.0-20220220210610-088b5ce1723c
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -14,6 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
+	github.com/zachomedia/go-bdf v0.0.0-20220611021443-a3af701111be
 	go.uber.org/zap v1.16.0
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0

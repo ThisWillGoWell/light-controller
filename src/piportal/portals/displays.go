@@ -1,51 +1,30 @@
 package portals
 
-import "github.com/thiswillgowell/light-controller/src/display"
+import (
+	"github.com/thiswillgowell/light-controller/src/display"
+	"github.com/thiswillgowell/light-controller/src/piportal"
+	"github.com/thiswillgowell/light-controller/src/piportal/portalImage"
+)
+import _ "embed"
 
 var (
-	TopLeftDisplay     display.Display
-	TopRightDisplay    display.Display
-	BottomLeftDisplay  display.Display
-	BottomRightDisplay display.Display
-
-	TopHalfDisplay    display.Display
-	BottomHalfDisplay display.Display
-
-	LeftHalfDisplay  display.Display
-	RightHalfDisplay display.Display
-
-	Fireplace display.Display
+	LeftVertical  display.Display
+	RightVertical display.Display
+	BothVerticals display.Display
 )
 
 func init() {
 	var err error
-	topRightDisplay, err := NewMatrix("192.168.1.84:8080", TopLeft)
+	leftVerticalRaw, err := piportal.NewMatrix("192.168.1.203:8080", portalImage.TwoByThreeVertical)
 	if err != nil {
 		panic(err)
 	}
-	TopRightDisplay = display.NewRotation(topRightDisplay, display.CounterClockwise)
-
-	topLeftDisplay, err := NewMatrix("192.168.1.106:8080", BottomLeft)
+	LeftVertical = display.NewRotation(leftVerticalRaw, display.MirrorAcrossX)
+	rightVerticalRaw, err := piportal.NewMatrix("192.168.1.200:8080", portalImage.TwoByThreeVertical)
 	if err != nil {
 		panic(err)
 	}
-	TopLeftDisplay = display.NewRotation(topLeftDisplay, display.Clockwise)
-
-	bottomRightDisplay, err := NewMatrix("192.168.1.83:8080", TopRight)
-	BottomRightDisplay = display.NewRotation(display.NewRotation(bottomRightDisplay, display.CounterClockwise), display.MirrorAcrossY)
-
-	if err != nil {
-		panic(err)
-	}
-	//	p2, err := NewMatrix("192.168.1.106:8080", TopRight)
-	bottomLeftDisplay, err := NewMatrix("192.168.1.53:8080", TopLeft)
-	if err != nil {
-		panic(err)
-	}
-	BottomLeftDisplay = display.NewRotation(display.NewRotation(bottomLeftDisplay, display.Clockwise), display.MirrorAcrossY)
-
-	BottomHalfDisplay = display.NewMultiDisplay(display.ArrangementHorizontal, BottomLeftDisplay, BottomRightDisplay)
-	TopHalfDisplay = display.NewMultiDisplay(display.ArrangementHorizontal, TopLeftDisplay, TopRightDisplay)
-	Fireplace = display.NewMultiDisplay(display.ArrangementVertical, TopHalfDisplay, BottomHalfDisplay)
+	RightVertical = display.NewRotation(rightVerticalRaw, display.MirrorAcrossY)
+	BothVerticals = display.NewDuplicateDisplay(LeftVertical, RightVertical)
 
 }
