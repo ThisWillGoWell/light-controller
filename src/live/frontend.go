@@ -12,6 +12,10 @@ import (
 //go:embed liveView.html
 var liveViewHTML []byte
 
+func RunWithDisplay(d display.Display) {
+	RunServer(display.NewSubscription(d))
+}
+
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "Not found", http.StatusNotFound)

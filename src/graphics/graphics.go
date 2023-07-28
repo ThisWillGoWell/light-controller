@@ -1,8 +1,12 @@
 package graphics
 
 import (
+	"fmt"
+	"image"
 	"image/color"
+	"image/png"
 	"math"
+	"os"
 
 	"github.com/fogleman/gg"
 )
@@ -178,4 +182,15 @@ func ColorToHsv(inputColor color.Color) (uint16, uint8, uint8) {
 		}
 	}
 	return uint16(h * 65535 / 360), uint8(s * 255), uint8(v * 255)
+}
+
+func SaveImage(name string, m image.Image) {
+	f, err := os.Create(fmt.Sprintf("%s.png", name))
+	if err != nil {
+		panic(err)
+	}
+	if err := png.Encode(f, m); err != nil {
+		panic(err)
+	}
+
 }

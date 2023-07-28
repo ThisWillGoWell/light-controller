@@ -2,7 +2,6 @@ package openweathermap
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -19,7 +18,7 @@ func (dt *DtTxt) UnmarshalJSON(b []byte) error {
 }
 
 func (t *DtTxt) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d", 420)), nil
+	return json.Marshal(t)
 }
 
 // Forecast5WeatherList holds specific query data
