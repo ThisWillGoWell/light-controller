@@ -4,7 +4,6 @@ import (
 	"bytes"
 	_ "embed"
 	"git.sr.ht/~sbinet/gg"
-	"github.com/thiswillgowell/light-controller/src/graphics"
 	"image"
 	"image/png"
 )
@@ -98,10 +97,8 @@ const trimmedSize = 100.0 - (trim * 2)
 
 func GetWeatherIcon(code string, size int) image.Image {
 	icon := codeToPng[code]
-	graphics.SaveImage("test-icon", icon)
 	dc := gg.NewContext(size, size)
 	dc.Scale(float64(size)/trimmedSize, float64(size)/trimmedSize)
 	dc.DrawImage(icon, -1*trim, -1*trim)
-	graphics.SaveImage("test-icon-2", dc.Image())
 	return dc.Image()
 }
