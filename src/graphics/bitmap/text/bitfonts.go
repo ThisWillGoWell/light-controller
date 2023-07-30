@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"math"
 )
 import bdf "github.com/zachomedia/go-bdf"
 
@@ -86,6 +87,10 @@ var fontFileTexgyte []byte
 
 type BitFontType int
 
+func (t BitFontType) Font() *Font {
+	return fonts[t]
+}
+
 const (
 	Font10x20Type BitFontType = iota
 	Font4x6Type   BitFontType = iota
@@ -142,7 +147,73 @@ var typeToByte = map[BitFontType][]byte{
 	TexgyteType:   fontFileTexgyte,
 }
 
-var fonts = map[BitFontType]*bdf.Font{}
+var fonts = map[BitFontType]*Font{}
+
+type Font struct {
+	*bdf.Font
+	emptyEdgeSpace map[rune]int
+}
+
+func (f *Font) Height() int {
+	return f.Size
+}
+
+func (f *Font) Width() int {
+	return f.Size
+}
+
+func (f *Font) EmptyPixels(chr rune) int {
+	value, ok := f.emptyEdgeSpace[chr]
+	if !ok {
+		value = calculateEmptySpace(f.CharMap[chr])
+		f.emptyEdgeSpace[chr] = value
+	}
+	return value
+}
+
+// calculate the min distance from the edge of the image to a column with a non-zero value
+func calculateEmptySpace(character *bdf.Character) int {
+	// Get the image.Alpha data from the character
+	img := character.Alpha
+
+	// Determine the bounds of the image
+	bounds := img.Bounds()
+	width := bounds.Max.X
+	height := bounds.Max.Y
+
+	// Initialize the minimum distance from the left and right edges of the image
+	minDistanceLeft := width // Start with the maximum possible value
+	minDistanceRight := width
+
+	// Loop through the columns to find the minimum distance from the left and right edges
+	for x := 0; x < width; x++ {
+		// Check if there's any non-zero (non-empty) pixel in the current column
+		isEmptyColumn := true
+		for y := 0; y < height; y++ {
+			if img.AlphaAt(x, y).A != 0 {
+				isEmptyColumn = false
+				break
+			}
+		}
+
+		// If it's an empty column, calculate the distance from the edges
+		if !isEmptyColumn {
+			distanceFromLeft := x
+			distanceFromRight := width - x - 1 // The rightmost column has index (width - 1 - 1)
+
+			// Update the minimum distances if necessary
+			if distanceFromLeft < minDistanceLeft {
+				minDistanceLeft = distanceFromLeft
+			}
+			if distanceFromRight < minDistanceRight {
+				minDistanceRight = distanceFromRight
+			}
+		}
+	}
+
+	// Return the minimum distance from the edge to a column with a non-zero value
+	return int(math.Min(float64(minDistanceLeft), float64(minDistanceRight)))
+}
 
 const (
 	ExtraSmall = Font4x6Type
@@ -160,7 +231,10 @@ func init() {
 		if err != nil {
 			zap.S().Errorw("failed to parse font data", "position", t, zap.Error(err))
 		} else {
-			fonts[t] = font
+			fonts[t] = &Font{
+				Font:           font,
+				emptyEdgeSpace: map[rune]int{},
+			}
 		}
 	}
 }
@@ -208,7 +282,7 @@ func WriteOnImage(message string, fontType BitFontType, c color.Color, position 
 			return calculateDistance()
 		}
 		bounds := character.Alpha.Bounds()
-		draw.DrawMask(img, bounds.Add(position), fillColor, image.Point{X: 0, Y: 0}, character.Alpha, image.Point{X: 0, Y: 0}, draw.Over)
+		draw.DrawMask(img, bounds.Add(position), fillColor, image.Point{X: 0, Y: 0}, character.Alpha, image.Point{X: 0, Y: 0}, draw.Src)
 		position = position.Add(image.Point{X: bounds.Max.X})
 	}
 

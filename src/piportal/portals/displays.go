@@ -19,12 +19,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	LeftVertical = display.NewRotation(leftVerticalRaw, display.MirrorAcrossX)
-	rightVerticalRaw, err := piportal.NewMatrix("192.168.1.200:8080", portalImage.TwoByThreeVertical)
+	LeftVertical = display.NewRotation(display.NewRotation(leftVerticalRaw, display.MirrorAcrossY), display.MirrorAcrossX)
+	RightVertical, err = piportal.NewMatrix("192.168.1.200:8080", portalImage.TwoByThreeVertical)
 	if err != nil {
 		panic(err)
 	}
-	RightVertical = display.NewRotation(rightVerticalRaw, display.MirrorAcrossY)
 	BothVerticals = display.NewDuplicateDisplay(LeftVertical, RightVertical)
 
 }

@@ -13,5 +13,5 @@ func VerticalFullInfoDraw(img draw.Image, pos image.Point) {
 	TwoDayHighAndLow(img, image.Point{X: graphLength + 6, Y: pos.Y + 29}, text.ExtraSmall)
 	// start pos of last item + height of item + offset
 	pos.Y += 30 + 10 + 5
-	ThreeDayForecast(img, image.Point{X: pos.X + 6, Y: pos.Y}, 3)
+	ThreeDayForecast(img, image.Point{X: pos.X + 6, Y: pos.Y}, 5)
 }

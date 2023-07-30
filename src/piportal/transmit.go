@@ -75,11 +75,6 @@ func (c *Connection) WriteFrame(img image.Image) {
 
 		totalSent += n
 	}
-
-	if totalSent == len(pixelData) {
-		fmt.Println("Image sent successfully!")
-	}
-
 }
 
 func getPixelData(img image.Image) []byte {

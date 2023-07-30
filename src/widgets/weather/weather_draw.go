@@ -70,8 +70,8 @@ func ThreeDayForecast(img draw.Image, pos image.Point, numDays int) {
 		icon := icons.GetWeatherIcon(forecast.Weather[0].Icon, iconSize)
 
 		draw.Draw(img, image.Rect(pos.X, pos.Y, pos.X+iconSize, pos.Y+iconSize), icon, image.Point{}, draw.Over)
-		text.WriteOnImage(fmt.Sprintf("%.0f", forecast.FeelsLike.Day), text.ExtraSmall, color.White, pos.Add(image.Point{iconSize + 3, 4}), img)
-		text.WriteOnImage(fmt.Sprintf("%.0f", forecast.FeelsLike.Night), text.ExtraSmall, color.White, pos.Add(image.Point{iconSize + 21, 4}), img)
+		text.WriteOnImage(fmt.Sprintf("%.0f", forecast.FeelsLike.Day), text.Small, color.White, pos.Add(image.Point{iconSize + 3, 4}), img)
+		text.WriteOnImage(fmt.Sprintf("%.0f", forecast.FeelsLike.Night), text.Small, color.White, pos.Add(image.Point{iconSize + 21, 4}), img)
 
 		pos.Y += iconSize
 	}

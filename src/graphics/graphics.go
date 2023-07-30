@@ -184,6 +184,16 @@ func ColorToHsv(inputColor color.Color) (uint16, uint8, uint8) {
 	return uint16(h * 65535 / 360), uint8(s * 255), uint8(v * 255)
 }
 
+func ColorToRGBA(c color.Color) color.RGBA {
+	r, g, b, a := c.RGBA()
+	return color.RGBA{
+		R: uint8(r),
+		G: uint8(g),
+		B: uint8(b),
+		A: uint8(a),
+	}
+}
+
 func SaveImage(name string, m image.Image) {
 	f, err := os.Create(fmt.Sprintf("%s.png", name))
 	if err != nil {
