@@ -90,6 +90,10 @@ func init() {
 	}
 }
 
+func loadPng() {
+
+}
+
 const trim = 17
 
 // icons are 100x100 by default

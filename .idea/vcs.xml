@@ -3,7 +3,5 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmd/pi/portal/rpi-rgb-led-matrix" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmd/pi/rpi-rgb-led-matrix" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmd/pi/rpi-rgb-led-matrix/rpi-rgb-led-matrix" vcs="Git" />
   </component>
 </project>

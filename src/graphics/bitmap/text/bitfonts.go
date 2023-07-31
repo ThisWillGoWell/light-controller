@@ -87,7 +87,7 @@ var fontFileTexgyte []byte
 
 type BitFontType int
 
-func (t BitFontType) Font() *Font {
+func (t BitFontType) Font() *font {
 	return fonts[t]
 }
 
@@ -147,26 +147,26 @@ var typeToByte = map[BitFontType][]byte{
 	TexgyteType:   fontFileTexgyte,
 }
 
-var fonts = map[BitFontType]*Font{}
+var fonts = map[BitFontType]*font{}
 
-type Font struct {
+type font struct {
 	*bdf.Font
 	emptyEdgeSpace map[rune]int
 }
 
-func (f *Font) Height() int {
-	return f.Size
+func (t BitFontType) Height() int {
+	return fonts[t].Size
 }
 
-func (f *Font) Width() int {
-	return f.Size
+func (t BitFontType) Width() int {
+	return fonts[t].XHeight
 }
 
-func (f *Font) EmptyPixels(chr rune) int {
-	value, ok := f.emptyEdgeSpace[chr]
+func (t BitFontType) EmptyPixels(chr rune) int {
+	value, ok := fonts[t].emptyEdgeSpace[chr]
 	if !ok {
-		value = calculateEmptySpace(f.CharMap[chr])
-		f.emptyEdgeSpace[chr] = value
+		value = calculateEmptySpace(fonts[t].CharMap[chr])
+		fonts[t].emptyEdgeSpace[chr] = value
 	}
 	return value
 }
@@ -227,12 +227,12 @@ const (
 
 func init() {
 	for t, data := range typeToByte {
-		font, err := bdf.Parse(data)
+		bdfFont, err := bdf.Parse(data)
 		if err != nil {
 			zap.S().Errorw("failed to parse font data", "position", t, zap.Error(err))
 		} else {
-			fonts[t] = &Font{
-				Font:           font,
+			fonts[t] = &font{
+				Font:           bdfFont,
 				emptyEdgeSpace: map[rune]int{},
 			}
 		}

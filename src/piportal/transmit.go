@@ -59,7 +59,6 @@ func (c *Connection) WriteFrame(img image.Image) {
 
 	// Send the pixel data in chunks
 	totalSent := 0
-
 	for totalSent < len(pixelData) {
 		end := totalSent + chunkSize
 		if end > len(pixelData) {
@@ -75,6 +74,7 @@ func (c *Connection) WriteFrame(img image.Image) {
 
 		totalSent += n
 	}
+	atomic.AddInt64(c.counter, 1)
 }
 
 func getPixelData(img image.Image) []byte {
@@ -102,7 +102,7 @@ func NewUDPClient(address string) (*Connection, error) {
 	c := &Connection{
 		counter:        new(int64),
 		packetLimitter: rate.NewLimiter(rate.Every(time.Nanosecond*100), 1),
-		updateLimitter: rate.NewLimiter(100, 1),
+		updateLimitter: rate.NewLimiter(150, 1),
 	}
 	var err error
 	if c.conn, err = net.Dial("udp", address); err != nil {

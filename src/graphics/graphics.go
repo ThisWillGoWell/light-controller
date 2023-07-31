@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 	"image/png"
 	"math"
 	"os"
@@ -203,4 +204,12 @@ func SaveImage(name string, m image.Image) {
 		panic(err)
 	}
 
+}
+
+func Clear(img draw.Image) {
+	for x := 0; x < img.Bounds().Max.X; x++ {
+		for y := 0; y < img.Bounds().Max.Y; y++ {
+			img.Set(x, y, color.RGBA{})
+		}
+	}
 }
